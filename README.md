@@ -1,6 +1,6 @@
 # Mailcow Server With Ansible
 
-This is an evolution from https://github.com/ruppel/SecureServerWithAnsible.
+This is an evolution from https://github.com/ruppel/myserver.
 
 After the os upgrade to debian 12 the system had sever problems. I didn't manage to fix them so I decided to make a complete new setup. A friend recommended mailcow to me, so i gave it a try and .... it is wonderful.
 
