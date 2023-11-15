@@ -1,0 +1,72 @@
+- name: Checkout mailcow files from github
+  ansible.builtin.git:
+    repo: https://github.com/mailcow/mailcow-dockerized
+    dest: "{{ mailcow.installpath }}"
+    umask: "0022"
+    force: true
+- name: Check if mailcow config has already been generated
+  ansible.builtin.stat:
+    path: "{{ mailcow.installpath }}mailcow.conf"
+  register: file_mailcow_conf
+- name: Generate mailcow config
+  ansible.builtin.expect:
+    chdir: "{{ mailcow.installpath }}"
+    command: ./generate_config.sh
+    echo: yes
+    timeout: 120
+    responses:
+      (.*)your mail servers hostname(.*): "{{ mailcow.admin_fqdn }}"
+      (.*)Timezone \[(.*)\](.*): "{{ mailcow.timezone }}"
+      (.*)Choose the Branch with it(.*)s number(.*): "1"
+  when: not file_mailcow_conf.stat.exists
+- name: Adjust mailcow configuration
+  lineinfile:
+    path: "{{ mailcow.installpath }}mailcow.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - name: HTTP_PORT
+      regexp: '^(\s*)HTTP_PORT(\s*)=(.*)'
+      line: "HTTP_PORT={{ mailcow.internal_http_port }}"
+    - name: HTTP_BIND
+      regexp: '^(\s*)HTTP_BIND(\s*)=(.*)'
+      line: "HTTP_BIND=127.0.0.1"
+    - name: HTTPS_PORT
+      regexp: '^(\s*)HTTPS_PORT(\s*)=(.*)'
+      line: "HTTPS_PORT={{ mailcow.internal_https_port }}"
+    - name: HTTPS_BIND
+      regexp: '^(\s*)HTTPS_BIND(\s*)=(.*)'
+      line: "HTTPS_BIND=127.0.0.1"
+    - name: ADDITIONAL_SAN
+      regexp: '^(\s*)ADDITIONAL_SAN(\s*)=(.*)'
+      line: "ADDITIONAL_SAN={{ mailcow.additional_san }}"
+    - name: SKIP_LETS_ENCRYPT
+      regexp: '^(\s*)SKIP_LETS_ENCRYPT(\s*)=(.*)'
+      line: "SKIP_LETS_ENCRYPT=y"
+    - name: SKIP_SOLR
+      regexp: '^(\s*)SKIP_SOLR(\s*)=(.*)'
+      line: "SKIP_SOLR=y"
+  loop_control:
+    label: "{{ item.name }}"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ mailcow.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.override.yml
+- name: Run mailcow
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ mailcow.installpath }}"
+  register: output
+- name: Copy rspam config for DMARC reporting to server
+  template:
+    src: ../files/dmarc.conf
+    dest: "{{ mailcow.installpath }}data/conf/rspamd/local.d/dmarc.conf"
+    mode: "0644"
+- name: Rerun mailcow
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ mailcow.installpath }}"
+  register: output

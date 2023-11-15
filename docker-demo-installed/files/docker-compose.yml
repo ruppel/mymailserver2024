@@ -1,0 +1,14 @@
+services:
+  nginx:
+    image: nginx:latest
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ my_routerid }}.rule=Host(`{{ my_fqdn }}`)"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+
+networks:
+  traefik_web:
+    external: true

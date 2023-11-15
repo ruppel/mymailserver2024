@@ -1,0 +1,17 @@
+- name: Stop service Exim4
+  service:
+    name: exim4
+    state: stopped
+  ignore_errors: yes
+- name: Disable Exim4
+  service:
+    name: exim4
+    enabled: no
+  ignore_errors: yes
+- name: Uninstall Exim4
+  package:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "exim4-base"
+    - "exim4-config"

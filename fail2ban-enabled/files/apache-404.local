@@ -1,0 +1,5 @@
+[Definition]
+failregex = <HOST> - - \[.*\] "GET /.* HTTP/1\.[01]" 404 [0-9]+.*$
+# Option:  ignoreregex
+# Notes.:  regex to ignore standard search for favicon.ico  and robots.txt
+ignoreregex = .*(robots.txt|favicon.ico)

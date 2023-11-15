@@ -1,0 +1,57 @@
+- name: Install Fail2ban
+  package:
+    name: fail2ban
+    state: present
+- name: Copy apache filter to server
+  template:
+    src: ../files/apache-404.local
+    dest: /etc/fail2ban/filter.d/apache-404.local
+    mode: "0644"
+- name: Copy fail2ban subnet action to server
+  template:
+    src: ../files/iptables-subnet.local
+    dest: /etc/fail2ban/action.d/iptables-subnet.local
+    mode: "0644"
+- name: Copy fail2ban subnet filter to server
+  template:
+    src: ../files/recidive-subnet.local
+    dest: /etc/fail2ban/filter.d/recidive-subnet.local
+    mode: "0644"
+- name: Create a directory if it does not exist
+  file:
+    path: "{{ fail2ban.fail2ban_subnet_folder }}"
+    state: directory
+    mode: "0755"
+- name: Copy fail2ban-subnet awk script
+  template:
+    src: ../files/fail2ban-subnet.awk
+    dest: "{{ fail2ban.fail2ban_subnet_folder }}fail2ban-subnet.awk"
+    mode: "0644"
+- name: Copy fail2ban-subnet shell script
+  template:
+    src: ../files/fail2ban-subnet-starter.sh
+    dest: "{{ fail2ban.fail2ban_subnet_folder }}fail2ban-subnet-starter.sh"
+    mode: "0755"
+- name: Touch log file to have it created
+  file:
+    path: /var/log/fail2ban-subnet.log
+    state: touch
+    mode: "0640"
+    owner: "root"
+    group: "adm"
+- name: Add shell script to cron.hourly
+  file:
+    src: "{{ fail2ban.fail2ban_subnet_folder }}fail2ban-subnet-starter.sh"
+    dest: /etc/cron.hourly/fail2ban-subnet-starter
+    owner: root
+    group: root
+    state: link
+- name: Copy jail.local to server
+  template:
+    src: ../files/jail.local
+    dest: /etc/fail2ban/jail.local
+    mode: "0644"
+- name: Restart Fail2ban service
+  service:
+    name: fail2ban
+    state: restarted

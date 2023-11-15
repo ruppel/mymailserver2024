@@ -1,0 +1,30 @@
+- name: Add an Apt signing key for docker
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+- name: Get lsb name of host
+  command: "lsb_release -c -s"
+  register: host_lsb_name
+- name: Add apt-sources to docker
+  copy:
+    dest: /etc/apt/sources.list.d/docker.list
+    mode: "0644"
+    content: deb [arch=amd64] https://download.docker.com/linux/debian {{ host_lsb_name.stdout }} stable
+- name: "Update apt cache"
+  apt:
+    update_cache: yes
+- name: Install docker
+  package:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - python3-pip
+      - python3-docker
+    state: present
+- name: Autostart service docker after reboot
+  service:
+    name: docker
+    enabled: true

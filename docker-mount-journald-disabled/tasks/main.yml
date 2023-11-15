@@ -1,0 +1,24 @@
+# This ist a workaround
+# Docker floods systemd journal log with mount messages (health checks)
+# Example: server systemd[1]: run-docker-runtime\x2drunc-moby-9207b4658fc275ecbf55ce98e5204e0e699255dc137fa450c88bdbf844d1a197-runc.lOsx30.mount: Deactivated successfully.
+#
+# See https://github.com/docker/for-linux/issues/679#issuecomment-1620772551
+# and https://forum.openmediavault.org/index.php?thread/33667-owncloud-lots-of-weird-entries-in-log-systemd-run-docker-runtime-mount-succeeded/&postID=331163#post331163
+#
+# The workaround sets a filter for syslogd
+# Best would be, that docker doesn't flood the log with these messages...
+- name: Recursive create the folders
+  ansible.builtin.file:
+    path: /etc/systemd/system/run-docker-.mount.d
+    state: directory
+    recurse: yes
+- name: Add filter to systemd logging to disable dockeers mount flooding
+  copy:
+    dest: /etc/systemd/system/run-docker-.mount.d/10-silence.conf
+    mode: "0644"
+    content: |
+      [Mount]
+      LogLevelMax=notice
+- name: Just force systemd to reread configs
+  ansible.builtin.systemd:
+    daemon_reload: true

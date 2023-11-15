@@ -1,0 +1,26 @@
+- name: Folder for joplin should exist
+  file:
+    path: "{{ joplin.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ joplin.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+
+- name: Stop joplin
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ joplin.installpath }}"
+- name: Run joplin
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ joplin.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output

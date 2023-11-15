@@ -1,0 +1,25 @@
+- name: Folder for portainer should exist
+  file:
+    path: "{{ portainer.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ portainer.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+- name: Stop portainer
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ portainer.installpath }}"
+- name: Run portainer
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ portainer.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output

@@ -1,0 +1,13 @@
+- name: Install  apps
+  hosts: target
+  become: yes
+  roles:
+    - mailcow-installed
+    # was not able to get traefik to create certificate for {{fqnd}}
+    # so i create a simple demo and hope the rest will do...
+    - role: docker-demo-installed
+      vars:
+        my_fqdn: "{{ mailcow.le_dummy_demo.host }}"
+        my_folder: "{{ mailcow.le_dummy_demo.installpath }}"
+        my_routerid: "{{ mailcow.le_dummy_demo.routerid }}"
+    - local-mta-enabled

@@ -1,0 +1,5 @@
+- name: "Reconfigure dash to bash"
+  expect:
+    command: dpkg-reconfigure -f readline dash
+    responses:
+      (.*)Use dash as the default system shell \(/bin/sh\)\? \[yes/no\](.*): "no"

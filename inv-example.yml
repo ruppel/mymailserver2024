@@ -1,0 +1,152 @@
+all:
+  hosts:
+    target:
+      #
+      # ip of your target host
+      ansible_host: 5.5.5.5
+      ansible_connection: ssh
+      ssh_default_port: 22
+      #
+      # ssh port, you want to use
+      ansible_port: 22855
+      #
+      # user you want to use
+      ansible_user: root
+      ansible_python_interpreter: /usr/bin/python3
+      #
+      # password of the user you want to use
+      ansible_become_password: ansible_users_secret_password
+      #
+      # main domain of the host
+      domain: "example.org"
+      #
+      # subdomain to be used for SMTP and IMAP
+      subdomain: "server"
+      #
+      # complete domain to be used for SMTP and IMAP
+      fqdn: "{{ subdomain }}.{{ domain }}"
+      system:
+        journal_log_maxsize: "2500M"
+      traefik:
+        installpath: /opt/traefik/
+        dashboard:
+          url: "traefik.{{ domain }}"
+          #
+          # As documented in https://doc.traefik.io/traefik/middlewares/http/basicauth/#basicauth
+          # use the following command to create the basicAuth user/password hash
+          #    echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
+          basicAuth_user: "user:wiredhash"
+        #
+        # Mail to give letsencrypt as a contact
+        letsencrypt_mail: info@example.org
+        dns_challenge:
+          #
+          # DNS Challenge provider code and environment setting as documented here
+          # https://doc.traefik.io/traefik/https/acme/#providers
+          provider: providercode-example-autodns
+          environment:
+            - "AUTODNS_API_USER=your-user"
+            - "AUTODNS_API_PASSWORD=your-users-password"
+      portainer:
+        url: "portainer.{{ domain }}"
+        installpath: /opt/portainer/
+      docker_demo:
+        host: "demo.{{ domain }}"
+        installpath: "/opt/nginx-demo/"
+        routerid: "nginx-demo"
+      mailcow:
+        #
+        # This is the fqdn to access the admin web ui
+        # (on my server this is different to the fqdn used for SMTP and IMAP)
+        admin_fqdn: "mail.{{ domain }}"
+        installpath: "/opt/maillcow/"
+        additional_san: "server.{{ domain }}"
+        postmaster_email: "webmaster@{{ domain }}"
+        timezone: "Europe/Berlin"
+        internal_http_port: 8090
+        internal_https_port: 8443
+        dmarc_reporting:
+          org_name: "Your orgs name"
+          from_email: noreply-dmarc@{{ domain }}
+          from_name: "Orgname DMARC Report"
+        #
+        # I need a dummy demo with nginx to force traefik to get a cetificate for
+        # my domain used for IMAP and SMTP
+        le_dummy_demo:
+          host: "{{ subdomain }}.{{ domain }}"
+          installpath: "/opt/important-demo-{{ subdomain }}"
+          routerid: "important-demo-{{ subdomain }}"
+      #
+      # Enable local mail to be sent to a mailbox on mailcow
+      # As described here: https://docs.mailcow.email/post_installation/firststeps-local_mta/
+      local_mta_postfix:
+        #
+        # Unless you made big changes in mailcow, this should it be
+        relayhost: "172.22.1.1"
+        #
+        # where to send root mails to
+        root_alias: "{{ mailcow.postmaster_email }}"
+        local_fqdn: "local.{{ fqdn }}"
+      fail2ban:
+        #
+        # I have a special fail2ban program
+        # See https://github.com/ruppel/fail2ban-recidive-subnet
+        fail2ban_subnet_folder: "/opt/fail2ban-subnet/"
+        #
+        # Be sure to to be banned by yourself
+        ignoreip: "127.0.0.0/8 your.dyndns.domain.ifexists"
+      vaultwarden:
+        url: "passw.yourdomain.org"
+        installpath: "/opt/vaultwarden/"
+        #
+        # Admintoken for the initial start of vaultwarden
+        # Note, that this does not overwrite an existing token in an existing container!
+        admintoken: "long-and-very-secure-token-to-access-the-vaultwarden-admin-console"
+      joplin:
+        host: joplin.yourdomain.org
+        installpath: /opt/joplin/
+        mailer_enabled: 1
+        #
+        # Your mailers credentials
+        mailer_host: server.ofyourmailer.com
+        mailer_port: 465
+        mailer_secure: 1
+        mailer_auth_user: user_to_be_used
+        mailer_auth_password: password_to_be_userd
+        mailer_noreply_name: JoplinServer
+        mailer_noreply_email: from@wherethemailcomes.from
+      wireguard:
+        host: vpn.yourdomain.org
+        installpath: /opt/wireguard/
+        #
+        # The admin password
+        password: "very-secret-password"
+        tcp_port: 51821
+        udp_port: 51820
+      nextcloud:
+        host: cloud.yourdomain.com
+        installpath: /opt/nextcloud/
+        timezone: "Europe/Berlin"
+        #
+        # The following credentials will be used for the initial startup to set up the system
+        # If you change them, then it might be, that they do not change the installation
+        admin_user: "admin"
+        admin_password: "very-secret-admin-password"
+        db_root_password: "db-roots-secret-password"
+        db_name: "nextcloud"
+        db_user: "nextcloud"
+        db_password: "secret-password-for-nextcloud-dbuser"
+        adminer_host: nextcloud-adminer.yourdomain.com
+      watchtower:
+        #
+        # Cron entry: "Seconds" "Minutes" "Hour" "Day of Month" "Month" "Day of week"
+        # Here: Every night at 04:00 Uhr
+        schedule: "0 0 4 * * *"
+        hostname: "My Servername"
+        installpath: /opt/wireguard/
+        email_from: "webmaster@{{ domain }}"
+        email_to: "webmaster@{{ domain }}"
+        email_server: "{{ fqdn }}"
+        email_server_port: 587
+        email_server_user: "webmaster@{{ domain }}"
+        email_server_password: "secret-password-of-the-mailaccount"

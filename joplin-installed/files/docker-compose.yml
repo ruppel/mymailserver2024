@@ -1,0 +1,56 @@
+version: "3"
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - "./data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=joplin-uug9845h4
+      - POSTGRES_USER=joplin
+      - POSTGRES_DB=joplin
+    networks:
+      - internal
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  app:
+    image: joplin/server:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    # ports:
+    #   - 22300:22300
+    environment:
+      - APP_PORT=22300
+      - APP_BASE_URL=https://{{ joplin.host }}
+      - DB_CLIENT=pg
+      - POSTGRES_PASSWORD=joplin-uug9845h4
+      - POSTGRES_DATABASE=joplin
+      - POSTGRES_USER=joplin
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db
+      - MAILER_ENABLED={{ joplin.mailer_enabled }}
+      - MAILER_HOST={{ joplin.mailer_host }}
+      - MAILER_PORT={{ joplin.mailer_port }}
+      - MAILER_SECURE={{ joplin.mailer_secure }}
+      - MAILER_AUTH_USER={{ joplin.mailer_auth_user }}
+      - MAILER_AUTH_PASSWORD={{ joplin.mailer_auth_password }}
+      - MAILER_NOREPLY_NAME={{ joplin.mailer_noreply_name }}
+      - MAILER_NOREPLY_EMAIL={{ joplin.mailer_noreply_email }}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.joplin.rule=Host(`{{ joplin.host }}`)"
+      - "traefik.http.services.joplin.loadbalancer.server.port=22300"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+      - internal
+
+networks:
+  internal:
+    internal: true
+  traefik_web:
+    external: true

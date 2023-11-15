@@ -1,0 +1,91 @@
+[DEFAULT]
+bantime  = 60m
+destemail = {{ mailcow.postmaster_email }}
+sendername = fail2ban@{{ domain }}
+mta = mail
+action = %(action_mwl)s
+ignoreip = {{ fail2ban.ignoreip }}
+
+[sshd]
+enabled = true
+port = {{ ansible_port }}
+
+[pure-ftpd]
+enabled  = true
+#port     = ftp
+#filter   = pure-ftpd
+#logpath  = /var/log/syslog
+maxretry = 3
+
+[dovecot]
+enabled = true
+maxretry = 3
+mode = aggressive
+
+[postfix]
+enabled = true
+# To use another modes set filter parameter "mode" in jail.local:
+mode    = more
+maxretry = 3
+
+[postfix-rbl]
+enabled = true
+
+[postfix-sasl]
+enabled = true
+bantime  = 1d
+findtime = 120m
+maxretry = 3
+
+
+[apache-auth]
+enabled = true
+
+[apache-badbots]
+enabled = true
+
+[apache-noscript]
+enabled = true
+
+[apache-overflows]
+enabled = true
+
+[apache-nohome]
+enabled = true
+
+[apache-botsearch]
+enabled = true
+
+[apache-fakegooglebot]
+enabled = true
+
+[apache-modsecurity]
+enabled = true
+
+[apache-shellshock]
+enabled = true
+
+[apache-404]
+enabled = true
+port    = http,https
+filter  = apache-404
+logpath = /var/log/apache*/*access.log
+maxretry = 8
+findtime = 10m
+bantime  = 15m
+
+[recidive]
+enabled = true
+findtime = 1week
+bantime = 26week
+
+[recidive-subnet]
+enabled = true
+# ban & send an e-mail with whois report and relevant log lines
+# to the destemail.
+action = iptables-subnet[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+         %(mta)s-whois-lines[name=%(__name__)s, dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
+logpath = /var/log/fail2ban-subnet.log
+bantime = 26week
+findtime= 1day
+maxretry= 1 ; once we have a line, we ban

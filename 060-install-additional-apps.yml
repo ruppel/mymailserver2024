@@ -1,0 +1,9 @@
+- name: Install additional apps
+  hosts: target
+  become: yes
+  roles:
+    - joplin-installed
+    - wireguard-installed
+    - nextcloud-installed
+    - vaultwarden-installed
+    - watchtower-installed

@@ -1,0 +1,14 @@
+# Fail2Ban filter for repeated founds on subnets
+#
+# This filter monitors the fail2ban-subnet log file, and enables you to add long 
+# time bans for /24 subnet addresses that get found by fail2ban multiple times.
+#
+# Reasons to use this: block very persistent attacker subnets for a longer time, 
+# stop receiving email notifications about the same attacker subnet over and 
+# over again.
+#
+
+[Definition]
+
+failregex = ^.* Found subnet <HOST>/24 .*
+

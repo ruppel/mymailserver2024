@@ -1,0 +1,45 @@
+services:
+  nginx-mailcow:
+    environment:
+      ## START from ACTIVATE DMARC REPORTING
+      - MASTER=${MASTER:-y}
+      ## END from ACTIVATE DMARC REPORTING
+    networks:
+      web:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.moo.rule=Host(`${MAILCOW_HOSTNAME}`)
+      - traefik.http.routers.moo.tls=true
+      - traefik.http.routers.moo.tls.certresolver=my-dns-chlng
+      - traefik.http.services.moo.loadbalancer.server.port=${HTTP_PORT}
+      - traefik.http.routers.moo.entrypoints=https
+      - traefik.docker.network=traefik_web
+
+      ## START from ACTIVATE DMARC REPORTING
+      - ofelia.enabled="true"
+      - ofelia.job-exec.rspamd_dmarc_reporting_yesterday.schedule="@every 24h"
+      - ofelia.job-exec.rspamd_dmarc_reporting_yesterday.command="/bin/bash -c \"[[ $${MASTER} == y ]] && /usr/bin/rspamadm dmarc_report $(date --date yesterday '+%Y%m%d') > /var/lib/rspamd/dmarc_reports_last_log 2>&1 || exit 0\""
+      ## END from ACTIVATE DMARC REPORTING
+
+  certdumper:
+    image: humenius/traefik-certs-dumper
+    command: --restart-containers ${COMPOSE_PROJECT_NAME}-postfix-mailcow-1,${COMPOSE_PROJECT_NAME}-nginx-mailcow-1,${COMPOSE_PROJECT_NAME}-dovecot-mailcow-1
+    network_mode: none
+    volumes:
+      - "{{ traefik.installpath }}acme:/traefik:ro"
+      - ./data/assets/ssl/:/output:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    environment:
+      - DOMAIN={{ fqdn }}
+
+  ofelia-mailcow:
+    depends_on:
+      ## START from ACTIVATE DMARC REPORTING
+      - rspamd-mailcow
+      ## END from ACTIVATE DMARC REPORTING
+
+networks:
+  web:
+    external: true
+    name: traefik_web

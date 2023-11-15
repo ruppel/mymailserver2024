@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer-data:/data
+    labels:
+      - "traefik.enable=true"
+      # Frontend
+      - "traefik.http.routers.frontend.rule=Host(`{{ portainer.url }}`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=9000"
+      - "traefik.http.routers.frontend.service=frontend"
+
+      # Edge
+      # - "traefik.http.routers.edge.rule=Host(`edge.XXXXXXX.de`)"
+      # - "traefik.http.services.edge.loadbalancer.server.port=8000"
+      # - "traefik.http.routers.edge.service=edge"
+
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+
+networks:
+  traefik_web:
+    external: true

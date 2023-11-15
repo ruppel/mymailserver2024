@@ -1,0 +1,12 @@
+- name: set full qualified server name in /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '{{ ansible_host }} [{{ fqdn }} {{ subdomain }}](.*)$'
+    insertafter: '^127\.0\.'
+    line: '{{ ansible_host }} {{ fqdn }} {{ subdomain }}\1'
+    backrefs: yes
+- name: set hostname in file etc/hostname
+  lineinfile:
+      path: /etc/hostname
+      regexp: ".*"
+      line: "{{ subdomain }}"

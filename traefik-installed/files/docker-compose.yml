@@ -1,0 +1,30 @@
+services:
+  traefik:
+    image: traefik:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Set the container timezone by sharing the read-only localtime
+      - /etc/localtime:/etc/localtime:ro
+      # docker socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Set the dynamic configuration for the file provider
+      - ./dynamic-config.yml:/etc/traefik/dynamic-config.yml:ro
+      # Set the static configuration
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      # File to store the certificates
+      - ./acme:/var/traefik
+    environment:
+{% for myenv in traefik.dns_challenge.environment %}
+      - {{ myenv }}
+{% endfor %}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - web
+
+networks:
+  web:
+    name: traefik_web

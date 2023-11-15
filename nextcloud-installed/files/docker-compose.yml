@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+  db:
+    image: mariadb:latest
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=ROW --innodb_read_only_compressed=OFF
+    environment:
+      MARIADB_ROOT_PASSWORD: "{{ nextcloud.db_root_password }}"
+      MARIADB_DATABASE: "{{ nextcloud.db_name }}"
+      MARIADB_USER: "{{ nextcloud.db_user }}"
+      MARIADB_PASSWORD: "{{ nextcloud.db_password }}"
+    volumes:
+      - ./data:/var/lib/mysql
+    networks:
+      - internal
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloudadminer.rule=Host(`{{ nextcloud.adminer_host }}`)"
+      - "traefik.http.services.nextcloudadminer.loadbalancer.server.port=8080"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+      - internal
+
+  nextcloud:
+    image: nextcloud:stable-apache
+    restart: always
+    depends_on:
+      - db
+    environment:
+      TZ: "{{ nextcloud.timezone }}"
+      #
+      # These values are only set 'for the first time' the container is set up
+      # Because the html folder will be a volume, the html/config/config.php will also be persistant
+      # Docker will not rewrite the config.php if it already exists
+      # So take a look at the following tasks in main.yml
+      #
+      MYSQL_HOST: "db"
+      MYSQL_DATABASE: "{{ nextcloud.db_name }}"
+      MYSQL_USER: "{{ nextcloud.db_user }}"
+      MYSQL_PASSWORD: "{{ nextcloud.db_password }}"
+      NEXTCLOUD_ADMIN_USER: "{{ nextcloud.admin_user }}"
+      NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud.admin_password }}"
+      APACHE_DISABLE_REWRITE_IP: 1
+    volumes:
+      - ./html:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`{{ nextcloud.host }}`)"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+      - internal
+
+networks:
+  internal:
+    internal: true
+  traefik_web:
+    external: true

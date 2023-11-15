@@ -1,0 +1,33 @@
+- name: Install Postfix locally
+  package:
+    name:
+      - postfix
+      - bsd-mailx
+    state: present
+- name: Disable usage of port 25
+  lineinfile:
+    path: /etc/postfix/master.cf
+    regexp: '^(\s*)smtp(\s*)inet(.*)smtpd(.*)$'
+    line: '#\1smtp\2inet\3smtpd\4'
+    backrefs: yes
+- name: Adjust postfix config
+  shell:
+    cmd: "{{ item }}"
+  loop:
+    - postconf -e 'relayhost = 172.22.1.1'
+    - postconf -e "mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128"
+    - postconf -e "inet_interfaces = loopback-only"
+    - postconf -e "relay_transport = relay"
+    - postconf -e "default_transport = smtp"
+    - postconf -e "myhostname = {{ local_mta_postfix.local_fqdn }}"
+- name: Add local alias for root
+  lineinfile:
+    path: /etc/aliases
+    line: "root:{{ local_mta_postfix.root_alias }}"
+- name: Use new alias
+  shell:
+    cmd: "newaliases"
+- name: Reload service postfix
+  ansible.builtin.service:
+    name: postfix
+    state: reloaded

@@ -1,0 +1,67 @@
+- name: Folder for nextcloud should exist
+  file:
+    path: "{{ nextcloud.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ nextcloud.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+
+- name: Stop nextcloud
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ nextcloud.installpath }}"
+- name: Run nextcloud
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ nextcloud.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output
+- name: Wait until nextcloud finished its startup
+  ansible.builtin.wait_for:
+    path: "{{ nextcloud.installpath }}html/lib/versioncheck.php"
+- name: Wait another 60 seconds
+  ansible.builtin.wait_for:
+    timeout: 60
+  delegate_to: localhost
+- name: Adjust existing config.php using occ command
+  shell:
+    cmd: "docker compose exec --user www-data nextcloud php occ {{ item.occ_command }}"
+    chdir: "{{ nextcloud.installpath }}"
+  loop:
+    - name: Set trusted proxies 0
+      occ_command: "config:system:set trusted_proxies 0 --value=10.0.0.0/8"
+    - name: Set trusted proxies 1
+      occ_command: "config:system:set trusted_proxies 1 --value=172.16.0.0/12"
+    - name: Set trusted proxies 2
+      occ_command: "config:system:set trusted_proxies 2 --value=192.168.0.0/16"
+    - name: Set overwrite protocol
+      occ_command: "config:system:set overwriteprotocol --value=https"
+    - name: Set trusted domains 0
+      occ_command: "config:system:set trusted_domains 0 --value=localhost"
+    - name: Set trusted domains 1
+      occ_command: "config:system:set trusted_domains 1 --value={{ nextcloud.host }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: output
+
+# - name: Show results
+#   ansible.builtin.debug:
+#     var: output
+
+- name: Stop nextcloud
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ nextcloud.installpath }}"
+- name: Run nextcloud
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ nextcloud.installpath }}"
+  register: output

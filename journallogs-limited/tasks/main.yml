@@ -1,0 +1,9 @@
+- name: Limit journal logs to specific size
+  lineinfile:
+    path: /etc/systemd/journald.conf
+    insertafter: '#SystemMaxUse='
+    line: "SystemMaxUse={{ system.journal_log_maxsize }}"
+- name: Restart Journal service
+  service:
+    name: systemd-journald
+    state: restarted

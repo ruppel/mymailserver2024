@@ -1,0 +1,27 @@
+- name: Folder for traefik should exist
+  file:
+    path: "{{ traefik.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ traefik.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+    - dynamic-config.yml
+    - traefik.yml
+- name: Stop traefik
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ traefik.installpath }}"
+- name: Run traefik
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ traefik.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output

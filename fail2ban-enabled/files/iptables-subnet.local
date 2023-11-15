@@ -1,0 +1,58 @@
+# IPTables-Subnet Action configuration file
+# 
+# Taken from Fail22Ban configuration file "iptables-allports.conf"
+#    Author: Cyril Jaquier
+#    Modified: Yaroslav O. Halchenko <debian@onerussian.com>
+# 	 		made active on all ports from original iptables.conf
+#
+# Modified by Ruppel to ban and unban /24 subnets
+# (inspired by https://github.com/fail2ban/fail2ban/issues/927#issuecomment-584707819)
+#
+
+[INCLUDES]
+
+before = iptables-common.conf
+
+
+[Definition]
+
+# Option:  actionstart
+# Notes.:  command executed once at the start of Fail2Ban.
+# Values:  CMD
+#
+actionstart = <iptables> -N f2b-<name>
+              <iptables> -A f2b-<name> -j <returntype>
+              <iptables> -I <chain> -p <protocol> -j f2b-<name>
+
+# Option:  actionstop
+# Notes.:  command executed once at the end of Fail2Ban
+# Values:  CMD
+#
+actionstop = <iptables> -D <chain> -p <protocol> -j f2b-<name>
+             <actionflush>
+             <iptables> -X f2b-<name>
+
+# Option:  actioncheck
+# Notes.:  command executed once before each actionban command
+# Values:  CMD
+#
+actioncheck = <iptables> -n -L <chain> | grep -q 'f2b-<name>[ \t]'
+
+# Option:  actionban
+# Notes.:  command executed when banning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    See jail.conf(5) man page
+# Values:  CMD
+#
+actionban = <iptables> -I f2b-<name> 1 -s <ip>/24 -j <blocktype>
+
+# Option:  actionunban
+# Notes.:  command executed when unbanning an IP. Take care that the
+#          command is executed with Fail2Ban user rights.
+# Tags:    See jail.conf(5) man page
+# Values:  CMD
+#
+actionunban = <iptables> -D f2b-<name> -s <ip>/24 -j <blocktype>
+
+[Init]
+

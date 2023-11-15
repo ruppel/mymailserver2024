@@ -1,0 +1,16 @@
+http:
+  middlewares:
+    # A basic authentification middleware, to protect the Traefik dashboard to anyone except myself
+    # Use with traefik.http.routers.myRouter.middlewares: "traefikAuth@file"
+    traefikBasicAuth:
+      basicAuth:
+        users:
+          - "{{ traefik.dashboard.basicAuth_user }}"
+
+  routers:
+    traefik:
+      rule: Host(`{{ traefik.dashboard.url }}`)
+      service: api@internal
+      middlewares:
+        - traefikBasicAuth
+  services:

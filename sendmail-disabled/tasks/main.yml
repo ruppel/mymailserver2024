@@ -1,0 +1,14 @@
+- name: Stop service Sendmail
+  service:
+    name: sendmail
+    state: stopped
+  ignore_errors: yes
+- name: Disable Sendmail
+  service:
+    name: sendmail
+    enabled: no
+  ignore_errors: yes
+- name: Uninstall Sendmail
+  package:
+    name: "sendmail"
+    state: absent

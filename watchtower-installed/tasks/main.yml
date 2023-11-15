@@ -1,0 +1,26 @@
+- name: Folder for watchtower should exist
+  file:
+    path: "{{ watchtower.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ watchtower.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+
+- name: Stop watchtower
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ watchtower.installpath }}"
+- name: Run watchtower
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ watchtower.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output

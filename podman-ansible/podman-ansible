@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+#
+# if podman returns
+#    Error: statfs /Users/xxxx/.ssh: no such file or directory
+# do a
+#    podman machine stop; podman machine start
+#
+#
+
+
+podman run --rm \
+  --env PY_COLORS='1' \
+  --env ANSIBLE_FORCE_COLOR='1' \
+  -v ${HOME}/.ssh/:/root/.ssh/:ro \
+  -v $(pwd):/data \
+  cytopia/ansible:latest-tools $@
+
+
+# run the bash for checks
+# podman run -t -i \
+#   -v ${HOME}/.ssh/:/root/.ssh/:ro \
+#   -v $(pwd):/data \
+#   cytopia/ansible:latest-tools

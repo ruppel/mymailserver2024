@@ -1,0 +1,5 @@
+- name: Install Ansible Python Tools
+  package:
+    name:
+      - python3-pexpect
+    state: present

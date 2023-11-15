@@ -1,0 +1,54 @@
+- name: Apticron has to be present
+  package:
+    name: apticron
+    state: present
+- name: Reconfigure Apticron
+  expect:
+    command: dpkg-reconfigure -f readline apticron
+    timeout: 15
+    responses:
+      (.*)E-Mail address\(es\) to notify(.*): "{{ mailcow.postmaster_email }}"
+- name: Set Mail to be notified
+  lineinfile:
+    dest: "/etc/apticron/apticron.conf"
+    regexp: '^(\s*)EMAIL(\s*)=(.*)'
+    line: "EMAIL={{ mailcow.postmaster_email }}"
+    create: yes
+
+#
+#
+# No use of cron-apt for unattended upgrades but unattended-upgrades
+#
+#
+- name: Install unattended-upgrades
+  package:
+    name: unattended-upgrades
+    state: present
+- name: Reconfigure unattended-upgrades
+  expect:
+    command: dpkg-reconfigure -f readline unattended-upgrades
+    echo: yes
+    timeout: 15
+    responses:
+      (.*)Automatically download and install stable updates\? \[yes/no\](.*): "yes"
+- name: Configure unattendes-upgrades
+  lineinfile:
+    dest: "/etc/apt/apt.conf.d/50unattended-upgrades"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - name: Unattended-Upgrade::Mail
+      regexp: '^\s*(//)?Unattended-Upgrade::Mail\s+".*";(.*)'
+      line: "Unattended-Upgrade::Mail \"{{ mailcow.postmaster_email }}\";"
+    - name: Unattended-Upgrade::Remove-Unused-Dependencies
+      regexp: '^\s*(//)?Unattended-Upgrade::Remove-Unused-Dependencies\s+".*";(.*)'
+      line: "Unattended-Upgrade::Remove-Unused-Dependencies \"true\";"
+    - name: Unattended-Upgrade::Automatic-Reboot
+      regexp: '^\s*(//)?Unattended-Upgrade::Automatic-Reboot\s+".*";(.*)'
+      line: "Unattended-Upgrade::Automatic-Reboot \"true\";"
+    - name: Unattended-Upgrade::Automatic-Reboot-Time
+      regexp: '^\s*(//)?Unattended-Upgrade::Automatic-Reboot-Time\s+".*";(.*)'
+      line: "Unattended-Upgrade::Automatic-Reboot-Time \"05:00\";"
+  loop_control: 
+    label: "{{ item.name }}"
+

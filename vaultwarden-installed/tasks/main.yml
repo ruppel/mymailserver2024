@@ -1,0 +1,25 @@
+- name: Folder for vaultwarden should exist
+  file:
+    path: "{{ vaultwarden.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ vaultwarden.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+- name: Stop vaultwarden
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ vaultwarden.installpath }}"
+- name: Run vaultwarden
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ vaultwarden.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output

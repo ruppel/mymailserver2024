@@ -1,0 +1,17 @@
+- name: Install NTP
+  package:
+    name: ntp
+    state: present
+- name: Configure ntp servers
+  copy:
+    dest: /etc/ntp.conf
+    mode: "0644"
+    content: |
+      server 0.pool.ntp.org
+      server 1.pool.ntp.org
+      server 2.pool.ntp.org
+      server 3.pool.ntp.org
+- name: Restart ntp service
+  service:
+    name: ntp
+    state: restarted

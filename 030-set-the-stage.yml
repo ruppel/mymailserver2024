@@ -1,0 +1,12 @@
+- name: Set the stage
+  hosts: target
+  become: yes
+  roles:
+    - hostname-set
+    - ansible-python-tools
+    - update-upgrade
+    - restart-server
+    - change-to-bash
+    - sendmail-disabled
+    - exim4-disabled
+    - journallogs-limited

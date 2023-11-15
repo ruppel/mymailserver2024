@@ -1,0 +1,26 @@
+- name: Folder for should exist
+  file:
+    path: "{{ my_folder }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ my_folder }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+
+- name: Stop demo
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ my_folder }}"
+- name: Run demo
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ my_folder }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output

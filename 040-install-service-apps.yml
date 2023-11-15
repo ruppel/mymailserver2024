@@ -1,0 +1,16 @@
+- name: Install service apps
+  hosts: target
+  become: yes
+  roles:
+    - timesync-enabled
+    - system-updating-enabled
+    - fail2ban-enabled
+    - docker-installed
+    - docker-mount-journald-disabled
+    - traefik-installed
+    - portainer-installed
+    - role: docker-demo-installed
+      vars:
+        my_fqdn: "{{ docker_demo.host }}"
+        my_folder: "{{ docker_demo.installpath }}"
+        my_routerid: "{{ docker_demo.routerid }}"
