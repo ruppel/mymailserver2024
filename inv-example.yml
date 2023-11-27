@@ -59,7 +59,7 @@ all:
         # This is the fqdn to access the admin web ui
         # (on my server this is different to the fqdn used for SMTP and IMAP)
         admin_fqdn: "mail.{{ domain }}"
-        installpath: "/opt/maillcow/"
+        installpath: "/opt/mailcow/"
         additional_san: "server.{{ domain }}"
         postmaster_email: "webmaster@{{ domain }}"
         timezone: "Europe/Berlin"
@@ -70,7 +70,7 @@ all:
           from_email: noreply-dmarc@{{ domain }}
           from_name: "Orgname DMARC Report"
         #
-        # I need a dummy demo with nginx to force traefik to get a cetificate for
+        # I need a dummy demo with nginx to force traefik to get a certificate for
         # my domain used for IMAP and SMTP
         le_dummy_demo:
           host: "{{ subdomain }}.{{ domain }}"

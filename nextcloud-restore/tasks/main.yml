@@ -18,7 +18,7 @@
 
 - name: Extract the html backup
   ansible.builtin.unarchive:
-    src: "{{ backup.restore_from }}/nextcloud/html.tgz"
+    src: "{{ backup.restore_from }}/nextcloud/html.tar"
     dest: "{{ nextcloud.installpath }}/"
     remote_src: true
 

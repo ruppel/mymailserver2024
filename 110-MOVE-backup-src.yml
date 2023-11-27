@@ -2,6 +2,7 @@
   hosts: target
   become: yes
   roles:
+    - backup-folder-prepared
     - traefik-backup
     - mailcow-backup
     - joplin-backup

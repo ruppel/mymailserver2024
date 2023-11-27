@@ -204,5 +204,10 @@ Information on how to move all your services from Server A-SRC to Server B-DST
   - `./helper-scripts/backup_and_restore.sh restore`
   - Asked for the backup location give the value from the inventory file `inv-B-DST.yml` for `backup.restore_from` followed by `/mailcow/`
   - Answer the other questions
+    - Restore point should be only one available, so answer 1
+    - Dataset to restore, answer 0 to restore all
+    - Force a resync,... (I don't know, but I think it is a good idea), so I answer y
+    - Stop and restart mailcow ==> answer y
+  - After that I shutdown mailcow using `docker compose down` and restart it using `docker compose up -d`
   - This should restore mailcow completely without error messages
 - Check, if everything is working and no data is missing

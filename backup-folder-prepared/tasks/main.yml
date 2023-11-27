@@ -1,0 +1,11 @@
+- name: Clean up target folder
+  file:
+    path: "{{ backup.folder }}"
+    state: absent
+- name: Folder for backup should exist
+  file:
+    path: "{{ backup.folder }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
