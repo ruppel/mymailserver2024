@@ -1,0 +1,9 @@
+- name: Folder for joplin backup should exist
+  file:
+    path: "{{ backup.folder }}/joplin"
+    state: directory
+    mode: "0644"
+- name: Create a db backup
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "pg_dump -U {{ joplin.db_user }} --no-owner -d {{ joplin.db_name }}" > {{ backup.folder }}/joplin/db-dump.sql
+    chdir: "{{ joplin.installpath }}"

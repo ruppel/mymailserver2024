@@ -8,6 +8,10 @@
 #
 #
 
+echo "----------------------------------------------------------"
+echo "If you see this: \"Error: statfs <home-path>/.ssh: no such file or directory\""
+echo "Then run this:   podman machine stop; podman machine start"
+echo "----------------------------------------------------------"
 
 podman run --rm \
   --env PY_COLORS='1' \

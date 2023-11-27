@@ -1,0 +1,32 @@
+#
+# In theory this should work, but it throws an error...
+# After the question to "Force a resync now?" it responds:
+# "Error: auth-master: userdb list: connect(/run/dovecot/auth-userdb) failed: Connection refused",
+# "Panic: file auth-master.c: line 436 (auth_master_unset_io): assertion failed: (conn->to == NULL)",
+# "Error: Raw backtrace: /usr/lib/dovecot/libdovecot.so.0(backtrace_append+0x42) [0x7f337fa7a482]
+#   -> /usr/lib/dovecot/libdovecot.so.0(backtrace_get+0x1e) [0x7f337fa7a59e]
+#   -> /usr/lib/dovecot/libdovecot.so.0(+0x1041fb) [0x7f337fa871fb]
+#   -> /usr/lib/dovecot/libdovecot.so.0(+0x104231) [0x7f337fa87231]
+#   -> /usr/lib/dovecot/libdovecot.so.0(+0x56670) [0x7f337f9d9670]
+#   -> /usr/lib/dovecot/libdovecot.so.0(+0x53923) [0x7f337f9d6923]
+#   -> /usr/lib/dovecot/libdovecot.so.0(auth_master_user_list_deinit+0x13f) [0x7f337fa70cbf]
+#   -> /usr/lib/dovecot/libdovecot-storage.so.0(mail_storage_service_all_next+0x4b) [0x7f337fbc1a6b]
+#   -> /usr/bin/doveadm(doveadm_cmd_ver2_to_mail_cmd_wrapper+0x734) [0x559b8e0a7fc4]
+#   -> /usr/bin/doveadm(doveadm_cmd_run_ver2+0x501) [0x559b8e0b8211]
+#   -> /usr/bin/doveadm(doveadm_cmd_try_run_ver2+0x3a) [0x559b8e0b828a]
+#   -> /usr/bin/doveadm(main+0x1d4) [0x559b8e096e64]
+#   -> /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xea) [0x7f337f634d0a]
+#   -> /usr/bin/doveadm(_start+0x2a) [0x559b8e0970ca]",
+
+# - name: Restore mailcow data
+#   ansible.builtin.expect:
+#     chdir: "{{ mailcow.installpath }}"
+#     command: "{{ mailcow.installpath }}helper-scripts/backup_and_restore.sh restore"
+#     echo: yes
+#     timeout: 240
+#     responses:
+#       (.*)Backup location \(absolute path, starting with /\): "{{ backup.restore_from }}/mailcow/"
+#       (.*)Select a restore point(.*): "1"
+#       (.*)Select a dataset to restore(.*): "0"
+#       (.*)Force a resync now(.*): "y"
+#       (.*)mailcow will be stopped and the currently active mailcow.conf will be modified to use the (.*) do you want to proceed(.*): "y"

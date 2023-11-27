@@ -1,0 +1,10 @@
+- name: Folder for wireguard backup should exist
+  ansible.builtin.file:
+    path: "{{ backup.folder }}/wireguard"
+    state: directory
+    mode: "0644"
+- name: Backup files in data folder
+  ansible.builtin.copy:
+    src: "{{ wireguard.installpath }}data/"
+    remote_src: true
+    dest: "{{ backup.folder }}/wireguard"

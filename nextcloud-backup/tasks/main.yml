@@ -1,0 +1,32 @@
+#
+# This is done accoording to the nextcloud documentation
+# https://docs.nextcloud.com/server/latest/admin_manual/maintenance/backup.html
+#
+- name: Set maintenance mode to nextcloud
+  shell:
+    cmd: "docker compose exec --user www-data nextcloud php occ maintenance:mode --on"
+    chdir: "{{ nextcloud.installpath }}"
+- name: Wait 60 seconds so every client is able to finish it's tasks
+  ansible.builtin.wait_for:
+    timeout: 60
+  delegate_to: localhost
+
+- name: Folder for nextcloud backup should exist
+  file:
+    path: "{{ backup.folder }}/nextcloud"
+    state: directory
+    mode: "0666"
+- name: Create archive of html folder
+  community.general.archive:
+    path: "{{ nextcloud.installpath }}/html"
+    dest: "{{ backup.folder }}/nextcloud/html.tar"
+    format: "tar"
+- name: Create a db backup
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "mariadb-dump --single-transaction -u {{ nextcloud.db_user }} -p{{ nextcloud.db_password }} {{ nextcloud.db_name }}" > {{ backup.folder }}/nextcloud/db-dump.sql
+    chdir: "{{ nextcloud.installpath }}"
+
+- name: Disable maintenance mode to nextcloud
+  shell:
+    cmd: "docker compose exec --user www-data nextcloud php occ maintenance:mode --off"
+    chdir: "{{ nextcloud.installpath }}"

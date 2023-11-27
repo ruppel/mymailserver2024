@@ -1,0 +1,41 @@
+- name: Stop joplin
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ joplin.installpath }}"
+- name: Only start database
+  shell:
+    cmd: "docker compose up db -d"
+    chdir: "{{ joplin.installpath }}"
+  register: output
+
+- name: Copy backup file into db container
+  ansible.builtin.shell:
+    cmd: docker compose cp {{ backup.restore_from }}/joplin/db-dump.sql db:/tmp/db-dump.sql
+    chdir: "{{ joplin.installpath }}"
+
+- name: Drop old database and create new one
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "psql -U {{ joplin.db_user }} -d template1 -c \"{{ item }}\""
+    chdir: "{{ joplin.installpath }}"
+  loop:
+    - "DROP DATABASE {{ joplin.db_name }}"
+    - "CREATE DATABASE {{ joplin.db_name }}"
+
+- name: Restore the db backup
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "psql -U {{ joplin.db_user }}  {{ joplin.db_name }} < /tmp/db-dump.sql"
+    chdir: "{{ joplin.installpath }}"
+
+- name: Remove backup file from inside db container
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "rm /tmp/db-dump.sql"
+    chdir: "{{ joplin.installpath }}"
+- name: Stop joplin
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ joplin.installpath }}"
+- name: Run joplin
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ joplin.installpath }}"
+  register: output

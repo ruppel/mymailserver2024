@@ -1,0 +1,26 @@
+- name: Stop vaultwarden
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ vaultwarden.installpath }}"
+- name: Remove data dir
+  file:
+    path: "{{ vaultwarden.installpath }}/data"
+    state: absent
+- name: Folder for vaultwarden data should exist
+  file:
+    path: "{{ vaultwarden.installpath }}/data"
+    state: directory
+    mode: "0755"
+- name: Copy data to vaultwarden
+  copy:
+    remote_src: true
+    src: "{{ backup.restore_from }}/vaultwarden/"
+    dest: "{{ vaultwarden.installpath }}/data/"
+- name: Run vaultwarden
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ vaultwarden.installpath }}"
+  register: output
+- name: Notice
+  ansible.builtin.debug:
+    msg: "Please notice that your admin token in the inventory might be invalid, if there was a admin token in the config.json for vaultwarden."

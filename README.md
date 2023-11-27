@@ -41,6 +41,12 @@ Apps added:
     - so before you use your inventory you should decrypt it with
       `./podman-ansible/ansible-vault decrypt inv-server.yml`
 
+# !!!!CAVEAT!!!!
+
+_Check the scripts! You need to understand what's going on._
+_Use the scripts at your own risk! I do not take any responsibility for damages or data losses!_
+_As said before, in my opinion an administrator of a internet facing server should ALWAYS know, what he is doing!_
+
 # Setup your ansible controller machine
 
 You might install [ansible](https://www.ansible.com/) on your desktop computer.
@@ -153,3 +159,48 @@ These are my additional application. Use or don't use them, as you like.
 - Configure your DNS as documented in https://docs.mailcow.email/prerequisite/prerequisite-dns/
 - Have entries for DKIM and DMARC
 - (let the servers a little time to syncronize over the world...)
+
+# Move to another server
+
+Information on how to move all your services from Server A-SRC to Server B-DST
+
+## Checks / thoughts before you start
+
+- A-SRC and B-DST should have been setup using the scripts from here
+- You have a working inventory file for A-SRC (e.g. `inv-A-SRC.yml`) and for B-DST (e.g. `inv-B-DST.yml`)
+- Data in B-DST will get lost! (You might want to backup them...)
+- The scripts actually backup and restore the following apps
+  - traefik
+  - mailcow
+  - joplin
+  - wireguard
+  - vaultwarden
+  - nextcloud
+- Check if you have the same versions of that apps in A-SRC and B-DST
+- For joplin: Force the clients to "Re-upload local data to sync target"
+  - This can be found in Preferences > Synchronization > Show Advanced Settings
+  - (I needed days to find out, that this is necessary)
+- The scripts will create a SSH-Key on the B-DST server and transfer it to the A-SRC server. Having that we cat SFTP the data from there without a password
+
+If you want to move all your services from Server A you need to do the following steps:
+
+- Setup the destination server using the scripts above
+- We need a direct file transfer from A-SRC to B-DST, so ensure to have a ssh-key on B-DST:
+  - `ansible-playbook -i inv-B-DST.yml 101-MOVE-prepare-dst.yml`
+- Add this key to the authorized keys in A-SRC with command
+  - `ansible-playbook -i inv-A-SRC.yml 102-MOVE-prepare-src.yml`
+- now you should be able to SSH from B-DST to A-SRC. Check this out, using the correct port
+  - really do this to get the fingerprint of the server
+- Now we create the backup bundle using
+  - `ansible-playbook -i inv-A-SRC.yml 110-MOVE-backup-src.yml`
+- Copy the backup to the destination and restore the data there
+  - `ansible-playbook -i inv-B-DST.yml 120-MOVE-restore-dst.yml`
+- MAILCOW... BY NOW, AUTOMATED RESTORE DOESN'T WORK
+  - You need to restore manually
+  - Shell in B-DST
+  - `cd /opt/mailcow`
+  - `./helper-scripts/backup_and_restore.sh restore`
+  - Asked for the backup location give the value from the inventory file `inv-B-DST.yml` for `backup.restore_from` followed by `/mailcow/`
+  - Answer the other questions
+  - This should restore mailcow completely without error messages
+- Check, if everything is working and no data is missing

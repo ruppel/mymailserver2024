@@ -1,0 +1,10 @@
+- name: Folder for traefik backup should exist
+  file:
+    path: "{{ backup.folder }}/traefik"
+    state: directory
+    mode: "0644"
+- name: Copy acme file to backup folder
+  copy:
+    remote_src: true
+    src: "{{ traefik.installpath }}/acme"
+    dest: "{{ backup.folder }}/traefik/"

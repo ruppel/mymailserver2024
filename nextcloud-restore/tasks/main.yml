@@ -1,0 +1,73 @@
+#
+# This is done accourding to the nextcloud documentation
+# https://docs.nextcloud.com/server/latest/admin_manual/maintenance/restore.html
+#
+- name: Stop nextcloud
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ nextcloud.installpath }}"
+- name: Remove html dir
+  file:
+    path: "{{ nextcloud.installpath }}/html"
+    state: absent
+
+- name: Notice
+  ansible.builtin.debug:
+    msg:
+      - "Overwrite the complete nextcloud html folder with the backuped one."
+
+- name: Extract the html backup
+  ansible.builtin.unarchive:
+    src: "{{ backup.restore_from }}/nextcloud/html.tgz"
+    dest: "{{ nextcloud.installpath }}/"
+    remote_src: true
+
+- name: Run nextcloud
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ nextcloud.installpath }}"
+  register: output
+
+- name: Wait 60 seconds for startup of nextcloud
+  ansible.builtin.wait_for:
+    timeout: 60
+  delegate_to: localhost
+
+- name: Set maintenance mode to nextcloud
+  shell:
+    cmd: "docker compose exec --user www-data nextcloud php occ maintenance:mode --on"
+    chdir: "{{ nextcloud.installpath }}"
+
+- name: Drop old database and create new one
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "mariadb -u {{ nextcloud.db_user }} -p{{ nextcloud.db_password }} -e \"{{ item }}\""
+    chdir: "{{ nextcloud.installpath }}"
+  loop:
+    - "DROP DATABASE {{ nextcloud.db_name }}"
+    - "CREATE DATABASE {{ nextcloud.db_name }}"
+
+- name: Copy backup file into db container
+  ansible.builtin.shell:
+    cmd: docker compose cp {{ backup.restore_from }}/nextcloud/db-dump.sql db:/tmp/db-dump.sql
+    chdir: "{{ nextcloud.installpath }}"
+
+- name: Restore database
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "mariadb -u {{ nextcloud.db_user }} -p{{ nextcloud.db_password }} {{ nextcloud.db_name }} < /tmp/db-dump.sql"
+    chdir: "{{ nextcloud.installpath }}"
+
+- name: Remove backup file from inside db container
+  ansible.builtin.shell:
+    cmd: docker compose exec db sh -c "rm /tmp/db-dump.sql"
+    chdir: "{{ nextcloud.installpath }}"
+
+- name: Disable maintenance mode to nextcloud
+  shell:
+    cmd: "docker compose exec --user www-data nextcloud php occ maintenance:mode --off"
+    chdir: "{{ nextcloud.installpath }}"
+
+- name: Notice
+  ansible.builtin.debug:
+    msg:
+      - "Please notice that some of the credentials in your inventory you used to setup the new system could be overwritten by the nextcloud backup."
+      - "Especially the admin_user and the admin_password."

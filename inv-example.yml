@@ -35,7 +35,7 @@ all:
           # As documented in https://doc.traefik.io/traefik/middlewares/http/basicauth/#basicauth
           # use the following command to create the basicAuth user/password hash
           #    echo $(htpasswd -nB user) | sed -e s/\\$/\\$\\$/g
-          basicAuth_user: "user:wiredhash"
+          basicAuth_user: "user:confusinghash"
         #
         # Mail to give letsencrypt as a contact
         letsencrypt_mail: info@example.org
@@ -106,6 +106,9 @@ all:
         host: joplin.yourdomain.org
         installpath: /opt/joplin/
         mailer_enabled: 1
+        db_name: joplin
+        db_user: joplin
+        db_password: secret-password
         #
         # Your mailers credentials
         mailer_host: server.ofyourmailer.com
@@ -143,10 +146,17 @@ all:
         # Here: Every night at 04:00 Uhr
         schedule: "0 0 4 * * *"
         hostname: "My Servername"
-        installpath: /opt/wireguard/
+        installpath: /opt/watchtower/
         email_from: "webmaster@{{ domain }}"
         email_to: "webmaster@{{ domain }}"
         email_server: "{{ fqdn }}"
         email_server_port: 587
         email_server_user: "webmaster@{{ domain }}"
         email_server_password: "secret-password-of-the-mailaccount"
+      backup:
+        #
+        # Folder where the backup should be stored
+        folder: /root/backup-2023-11-16
+        #
+        # Folder from where the backup should be restored from
+        restore_from: /root/restore-2023-11-16

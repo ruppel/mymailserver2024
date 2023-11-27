@@ -8,9 +8,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=joplin-uug9845h4
-      - POSTGRES_USER=joplin
-      - POSTGRES_DB=joplin
+      - POSTGRES_PASSWORD={{ joplin.db_password }}
+      - POSTGRES_USER={{ joplin.db_user }}
+      - POSTGRES_DB={{ joplin.db_name }}
     networks:
       - internal
     labels:
@@ -27,9 +27,9 @@ services:
       - APP_PORT=22300
       - APP_BASE_URL=https://{{ joplin.host }}
       - DB_CLIENT=pg
-      - POSTGRES_PASSWORD=joplin-uug9845h4
-      - POSTGRES_DATABASE=joplin
-      - POSTGRES_USER=joplin
+      - POSTGRES_PASSWORD={{ joplin.db_password }}
+      - POSTGRES_DATABASE={{ joplin.db_name }}
+      - POSTGRES_USER={{ joplin.db_user }}
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=db
       - MAILER_ENABLED={{ joplin.mailer_enabled }}

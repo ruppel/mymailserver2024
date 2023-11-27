@@ -55,6 +55,21 @@
 # - name: Show results
 #   ansible.builtin.debug:
 #     var: output
+# occ app:install twofactor_totp
+- name: Install apps on nextcloud
+  shell:
+    cmd: "docker compose exec --user www-data nextcloud php occ app:install {{ item.app_identifier }}"
+    chdir: "{{ nextcloud.installpath }}"
+  loop:
+    - name: Bookmarks
+      app_identifier: "bookmarks"
+    - name: Calendar
+      app_identifier: "calendar"
+    - name: Contacts
+      app_identifier: "contacts"
+  loop_control:
+    label: "{{ item.name }}"
+  register: output
 
 - name: Stop nextcloud
   shell:

@@ -1,0 +1,13 @@
+- name: Copy config file to wireguard
+  copy:
+    remote_src: true
+    src: "{{ backup.restore_from }}/wireguard/"
+    dest: "{{ wireguard.installpath }}data/"
+- name: Stop wireguard
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ wireguard.installpath }}"
+- name: Run wireguard
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ wireguard.installpath }}"

@@ -1,0 +1,6 @@
+source:
+  host: "{{ ansible_host }}"
+  port: "{{ ansible_port }}"
+  user: "{{ ansible_user }}"
+  backup_folder: "{{ backup.folder }}"
+  archive_name: "{{ archive_name }}"

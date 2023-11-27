@@ -1,0 +1,13 @@
+- name: Be sure the file is absent
+  ansible.builtin.file:
+    path: "{{ backup.folder }}/{{ archive_name }}"
+    state: absent
+- name: Create data archive
+  community.general.archive:
+    path: "{{ backup.folder }}/"
+    dest: "{{ backup.folder }}/{{ archive_name }}"
+- name: Create variables file for sftp transfer
+  ansible.builtin.template:
+    src: ../files/moving-vars.yml
+    dest: ./tmp/moving-vars.yml
+  delegate_to: localhost

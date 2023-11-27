@@ -1,0 +1,11 @@
+- name: Backup System
+  hosts: target
+  become: yes
+  roles:
+    - traefik-backup
+    - mailcow-backup
+    - joplin-backup
+    - wireguard-backup
+    - vaultwarden-backup
+    - nextcloud-backup
+    - backup-bundle-created

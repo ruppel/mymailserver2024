@@ -1,0 +1,51 @@
+- name: Sqlite3 cli is needed for the backup
+  package:
+    name: sqlite3
+    state: present
+- name: Clean up target folder
+  file:
+    path: "{{ backup.folder }}/vaultwarden"
+    state: absent
+- name: Folder for vaultwarden backup should exist
+  file:
+    path: "{{ backup.folder }}/vaultwarden"
+    state: directory
+    mode: "0644"
+
+- name: Backup the database
+  shell:
+    cmd: sqlite3 data/db.sqlite3 "VACUUM INTO '{{ backup.folder }}/vaultwarden/db.sqlite3'"
+    chdir: "{{ vaultwarden.installpath }}"
+
+- name: Check if the attachments dir exists
+  ansible.builtin.stat:
+    path: "{{ vaultwarden.installpath }}/data/attachments"
+  register: res
+- name: Copy attachments to backup folder
+  copy:
+    remote_src: true
+    src: "{{ vaultwarden.installpath }}/data/attachments"
+    dest: "{{ backup.folder }}/vaultwarden/"
+  when: res.stat.isdir is defined and res.stat.isdir
+
+- name: Check if the sends dir exists
+  ansible.builtin.stat:
+    path: "{{ vaultwarden.installpath }}/data/sends"
+  register: res
+- name: Copy sends to backup folder
+  copy:
+    remote_src: true
+    src: "{{ vaultwarden.installpath }}/data/sends"
+    dest: "{{ backup.folder }}/vaultwarden/"
+  when: res.stat.isdir is defined and res.stat.isdir
+
+- name: Check if the config.json file exists
+  ansible.builtin.stat:
+    path: "{{ vaultwarden.installpath }}/data/config.json"
+  register: res
+- name: Copy config.json to backup folder
+  copy:
+    remote_src: true
+    src: "{{ vaultwarden.installpath }}/data/config.json"
+    dest: "{{ backup.folder }}/vaultwarden/"
+  when: res.stat.exists is defined and res.stat.exists

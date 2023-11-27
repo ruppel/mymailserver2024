@@ -1,0 +1,8 @@
+- name: Folder for mailcow backup should exist
+  file:
+    path: "{{ backup.folder }}/mailcow"
+    state: directory
+    mode: "0666"
+- name: Backup mailcow data
+  ansible.builtin.shell:
+    cmd: MAILCOW_BACKUP_LOCATION={{ backup.folder }}/mailcow/ {{ mailcow.installpath }}helper-scripts/backup_and_restore.sh backup all

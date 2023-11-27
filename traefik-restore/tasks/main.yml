@@ -1,0 +1,5 @@
+- name: Copy acme file to traefik
+  copy:
+    remote_src: true
+    src: "{{ backup.restore_from }}/traefik/"
+    dest: "{{ traefik.installpath }}/"

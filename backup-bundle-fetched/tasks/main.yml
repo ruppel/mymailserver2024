@@ -1,0 +1,22 @@
+- name: Read variables for moving
+  ansible.builtin.include_vars:
+    file: tmp/moving-vars.yml
+    name: moving
+- name: Delete currently fetched files completely
+  file:
+    path: "{{ backup.restore_from }}"
+    state: absent
+- name: Create folder for fetching the backup
+  file:
+    path: "{{ backup.restore_from }}"
+    state: directory
+    mode: "0644"
+- name: Fetch data file
+  ansible.builtin.command:
+    cmd: sftp -P {{ moving.source.port }} {{ moving.source.user }}@{{ moving.source.host }}:{{ moving.source.backup_folder }}/{{ moving.source.archive_name }} {{ archive_name }}
+    chdir: "{{ backup.restore_from }}"
+- name: Extract the data file
+  ansible.builtin.unarchive:
+    src: "{{ backup.restore_from }}/{{ archive_name }}"
+    dest: "{{ backup.restore_from }}"
+    remote_src: true

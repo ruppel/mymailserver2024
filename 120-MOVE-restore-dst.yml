@@ -1,0 +1,11 @@
+- name: Restore System
+  hosts: target
+  become: yes
+  roles:
+    - backup-bundle-fetched
+    - traefik-restore
+    # ## NOT WORKING ## - mailcow-restore
+    - joplin-restore
+    - wireguard-restore
+    - vaultwarden-restore
+    - nextcloud-restore

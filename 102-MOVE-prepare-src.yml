@@ -1,0 +1,10 @@
+- name: Prepare source server for move
+  hosts: target
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Set authorized key taken from file
+      ansible.posix.authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', './tmp/id_rsa.pub') }}"
