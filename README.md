@@ -15,7 +15,7 @@ Do not blindly clone them and start. Having a web and mail server in the interne
 - Use [docker](https://www.docker.com/) containers
 - Use [traefik](https://traefik.io/) as reverse proxy for the docker containers
 - Use [letsencrypt](https://letsencrypt.org/) with DNS Challenge to get SSL certificates
-- Use [mailcow](https://letsencrypt.org/) dockerized for the mail ecosystem
+- Use [mailcow](https://mailcow.email/) dockerized for the mail ecosystem
 - Use [portainer](https://www.portainer.io/) for the look inside containers if something fails
 - Use [watchtower](https://containrrr.dev/watchtower/) to keep the docker images up to date
 - Use [ansible](https://www.ansible.com/) for (nearly) everything to be setup on the server
