@@ -8,7 +8,7 @@ These are the scripts that I used (and use) to configure my running web and mail
 Take them as a blueprint for your needs.
 Do not blindly clone them and start. Having a web and mail server in the internet needs that you understand what you are doing!!
 
-# My architecture on the server
+## My architecture on the server
 
 - Use [debian](https://www.debian.org/) 12 (bookworm) as basis OS
 - Keep the system up to date automatically
@@ -28,7 +28,7 @@ Apps added:
 - [Vaultwarden](https://github.com/dani-garcia/vaultwarden) to store and sync credentials over all my clients
 - (more to come)
 
-# My architecture on the dev side (the captains chair)
+## My architecture on the dev side (the captains chair)
 
 - Use [Visual Studio Code](https://code.visualstudio.com/)
 - Use ansible in a docker container, i.e. [podman](https://podman.io/) container
@@ -41,13 +41,15 @@ Apps added:
     - so before you use your inventory you should decrypt it with
       `./podman-ansible/ansible-vault decrypt inv-server.yml`
 
-# !!!!CAVEAT!!!!
+## !!!!CAVEAT!!!!
 
 _Check the scripts! You need to understand what's going on._
 _Use the scripts at your own risk! I do not take any responsibility for damages or data losses!_
 _As said before, in my opinion an administrator of a internet facing server should ALWAYS know, what he is doing!_
 
-# Setup your ansible controller machine
+# Setup
+
+## Setup your ansible controller machine
 
 You might install [ansible](https://www.ansible.com/) on your desktop computer.
 
@@ -60,16 +62,16 @@ Podman sometime looses the link to the volume. If podman returns
 do a
 `podman machine stop; podman machine start`
 
-# Setup server OS
+## Setup server OS
 
 This is based on [Debian](https://www.debian.org/) Bookworm (12) installation. There are tutorials on how to install that.
 
-# Setup ansible on the server
+## Setup ansible on the server
 
 - Install ansible
   - See `010-install-ansible-controller.sh` for simple script that installs pipx and ansible on debian
 
-# Enable server user to do sudo and use ssh-key
+## Enable server user to do sudo and use ssh-key
 
 If you want to use a user other than root:
 
@@ -84,7 +86,7 @@ For the root user, or the user you created above:
 - Copy your public ssh key to file `~/.ssh/authorized_keys` to use Public/Private Key SSH Connection
 - Do the ssh connection to the server (to check if it works and to get the fingerprint of the server)
 
-# Initial Setup variables
+## Initial Setup variables
 
 - Copy file `inv-example.yml` to `inv-myserver.yml`
 - Change values in `inv-myserver.yml` to your needs, for the first test you need
@@ -93,33 +95,33 @@ For the root user, or the user you created above:
   - `ansible_become_password` to be set correctly
 - Set `ansible_port` to 22, which is the default ssh port. Or directly to the port you configured your server
 
-# Check the ansible connection
+## Check the ansible connection
 
 - `ansible-playbook -i inv-myserver.yml pingtest.yml`
 
 It should return a "OK"
 
-# Configure your inventory
+## Configure your inventory
 
 - Change vars in file `inv-myserver.yml` to your needs. Especially you are encouraged to change the ssh port to something other than 22, take 22401 for example.
 
-# Ensure SSH port
+## Ensure SSH port
 
 - `ansible-playbook -i inv-myserver.yml 020-ensure-target-ssh-port.yml`
   This checks the ssh port and changes it if needed
 
-# Check the ansible connection
+## Check the ansible connection
 
 - `ansible-playbook -i inv-myserver.yml pingtest.yml`
   This is the same test above, but it's now using the other ssh port.
 - Check the SSH connection to the new port with a terminal, also.
 
-# Set the stage
+## Set the stage
 
 - `ansible-playbook -i inv-myserver.yml 030-set-the-stage.yml`
   This sets the hostname, enhances the sources for apt, installs required ansible tools, updates the system, does a restart, changed dash to bash and disabled sendmail
 
-# Install the service applications
+## Install the service applications
 
 - `ansible-playbook -i inv-myserver.yml 040-install-service-apps.yml`
   This will install ntp, automatic security updates, fail2ban, docker, traefik, portainer and a docker demo nginx app
@@ -128,7 +130,7 @@ It should return a "OK"
 - Check whether traefik and portainer are running
 - Only move to the next step, if all works
 
-# Install Mailcow
+## Install Mailcow
 
 - `ansible-playbook -i inv-myserver.yml 050-install-mailcow.yml`
   This will install and startup mailcow (and all containers in that family)
@@ -142,7 +144,7 @@ It should return a "OK"
 
 Congrats! You have a working mailserver!
 
-# Install additional applications
+## Install additional applications
 
 These are my additional application. Use or don't use them, as you like.
 
@@ -154,7 +156,7 @@ These are my additional application. Use or don't use them, as you like.
   - Vaultwarden
   - Watchtower
 
-# DNS, DKIM and DMARC
+## DNS, DKIM and DMARC
 
 - Configure your DNS as documented in https://docs.mailcow.email/prerequisite/prerequisite-dns/
 - Have entries for DKIM and DMARC
@@ -182,7 +184,7 @@ Information on how to move all your services from Server A-SRC to Server B-DST
   - (I needed days to find out, that this is necessary)
 - The scripts will create a SSH-Key on the B-DST server and transfer it to the A-SRC server. Having that we cat SFTP the data from there without a password
 
-If you want to move all your services from Server A you need to do the following steps:
+## Steps to do to move your data from A-SRC to B-DST
 
 - Setup the destination server using the scripts above
 - We need a direct file transfer from A-SRC to B-DST, so ensure to have a ssh-key on B-DST:
