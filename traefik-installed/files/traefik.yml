@@ -39,3 +39,6 @@ certificatesResolvers:
       dnsChallenge:
         provider: "{{ traefik.dns_challenge.provider }}"
         delayBeforeCheck: "600"
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
