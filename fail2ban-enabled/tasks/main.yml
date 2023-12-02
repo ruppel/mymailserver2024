@@ -2,6 +2,10 @@
   package:
     name: fail2ban
     state: present
+- name: Install Gnu AWK
+  package:
+    name: gawk
+    state: present
 - name: Copy apache filter to server
   template:
     src: ../files/apache-404.local
