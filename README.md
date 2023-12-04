@@ -108,39 +108,41 @@ It should return a "OK"
 ## Ensure SSH port
 
 - `ansible-playbook -i inv-myserver.yml 020-ensure-target-ssh-port.yml`
-  This checks the ssh port and changes it if needed
+  - This checks the ssh port and changes it if needed
 
 ## Check the ansible connection
 
 - `ansible-playbook -i inv-myserver.yml pingtest.yml`
-  This is the same test above, but it's now using the other ssh port.
+  - This is the same test above, but it's now using the other ssh port.
 - Check the SSH connection to the new port with a terminal, also.
 
 ## Set the stage
 
 - `ansible-playbook -i inv-myserver.yml 030-set-the-stage.yml`
-  This sets the hostname, enhances the sources for apt, installs required ansible tools, updates the system, does a restart, changed dash to bash and disabled sendmail
+  - This sets the hostname, enhances the sources for apt, installs required ansible tools, updates the system, does a restart, changed dash to bash and disabled sendmail
 
 ## Install the service applications
 
 - `ansible-playbook -i inv-myserver.yml 040-install-service-apps.yml`
-  This will install ntp, automatic security updates, fail2ban, docker, traefik, portainer and a docker demo nginx app
+  - This will install ntp, automatic security updates, fail2ban, docker, traefik, portainer and a docker demo nginx app
 - Check, whether you can access the docker demo app in your browser
 - Wait a while to see, whether traefik and letsencrypt obtained a certificate (might take few minutes)
 - Check whether traefik and portainer are running
+- Give Portainer an admin password.
+  - If you are too late, then restart the stack using `docker compose down; docker compose up -d` on the server in the folder `/opt/portainer/`
 - Only move to the next step, if all works
 
 ## Install Mailcow
 
 - `ansible-playbook -i inv-myserver.yml 050-install-mailcow.yml`
-  This will install and startup mailcow (and all containers in that family)
+  - This will install and startup mailcow (and all containers in that family)
 - Check, whether you can access the webinterface of mailcow (may take a few seconds)
 - Login using startpassword (see https://docs.mailcow.email/i_u_m/i_u_m_install/#start-mailcow)
 - Change your Password
 - Add "127.0.0.0/8" (as well as your local ip and or your dyndns-domain) to the fail2ban whitelist
-  System > Configuration > Options > Fail2Ban parameters
+  - Go to: System > Configuration > Options > Fail2Ban parameters
 - Check the logs (i.e. using portainer) whether there is still a problem
-- Add E-mail Domains and Mailboxes (of course check out the mailcow documentation)
+- Add E-mail Domains and Mailboxes (of course check out the mailcow documentation for further installation steps, e.g. RSPAMD password)
 
 Congrats! You have a working mailserver!
 
