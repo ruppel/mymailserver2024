@@ -18,11 +18,11 @@ podman run --rm \
   --env ANSIBLE_FORCE_COLOR='1' \
   -v ${HOME}/.ssh/:/root/.ssh/:ro \
   -v $(pwd):/data \
-  cytopia/ansible:latest-tools $@
+  docker.io/cytopia/ansible:latest-tools $@
 
 
 # run the bash for checks
 # podman run -t -i \
 #   -v ${HOME}/.ssh/:/root/.ssh/:ro \
 #   -v $(pwd):/data \
-#   cytopia/ansible:latest-tools
+#   docker.io/cytopia/ansible:latest-tools
