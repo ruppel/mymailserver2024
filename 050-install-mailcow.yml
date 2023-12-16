@@ -2,12 +2,18 @@
   hosts: target
   become: yes
   roles:
+    #
+    # Install Mailcow
     - mailcow-installed
+    #
     # was not able to get traefik to create certificate for {{fqnd}}
     # so i create a simple demo and hope the rest will do...
-    - role: docker-demo-installed
+    # hey, but I could also use grav to enrich the website...
+    - role: grav-installed
       vars:
         my_fqdn: "{{ mailcow.le_dummy_demo.host }}"
         my_folder: "{{ mailcow.le_dummy_demo.installpath }}"
         my_routerid: "{{ mailcow.le_dummy_demo.routerid }}"
+    #
+    # connect local mailsystem with mailcow
     - local-mta-enabled

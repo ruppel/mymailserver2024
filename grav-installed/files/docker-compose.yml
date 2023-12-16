@@ -1,0 +1,22 @@
+services:
+  grav:
+    image: lscr.io/linuxserver/grav:latest
+    container_name: grav
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ my_folder }}/config:/config"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ my_routerid }}.rule=Host(`{{ my_fqdn }}`)"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+
+networks:
+  traefik_web:
+    external: true
