@@ -1,0 +1,33 @@
+version: "3"
+services:
+  front:
+    image: tombursch/kitchenowl-web:latest
+    restart: unless-stopped
+    depends_on:
+      - back
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kitchenowl.rule=Host(`{{ kitchen-owl.host }}`)"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+      - internal
+
+
+  back:
+    image: tombursch/kitchenowl:latest
+    restart: unless-stopped
+    environment:
+      - JWT_SECRET_KEY={{ kitchen-owl.secret_key }}
+      - FRONT_URL="https://{{ kitchen-owl.host }}"
+      - OPEN_REGISTRATION={{ kitchen-owl.open_registration }}
+    volumes:
+      - ./data:/data
+    networks:
+      - internal
+
+networks:
+  internal:
+    internal: true
+  traefik_web:
+    external: true

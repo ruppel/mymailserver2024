@@ -1,0 +1,26 @@
+- name: Folder for kitchen-owl should exist
+  file:
+    path: "{{ kitchen-owl.installpath }}"
+    state: directory
+    mode: "0644"
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ kitchen-owl.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+
+- name: Stop kitchen-owl
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ kitchen-owl.installpath }}"
+- name: Run kitchen-owl
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ kitchen-owl.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output
