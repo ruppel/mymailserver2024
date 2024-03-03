@@ -1,9 +1,27 @@
 services:
+  # dovecot-mailcow:
+  #   ports:
+  #     - "[{{ mailcow.ipv6 }}]:143:143"
+  #     - "[{{ mailcow.ipv6 }}]:993:993"
+  #     - "[{{ mailcow.ipv6 }}]:110:110"
+  #     - "[{{ mailcow.ipv6 }}]:995:995"
+  #     - "[{{ mailcow.ipv6 }}]:4190:4190"
+
+  # postfix-mailcow:
+  #   ports:
+  #     - "[{{ mailcow.ipv6 }}]:25:25"
+  #     - "[{{ mailcow.ipv6 }}]:465:465"
+  #     - "[{{ mailcow.ipv6 }}]:587:587"
+
   nginx-mailcow:
     environment:
       ## START from ACTIVATE DMARC REPORTING
       - MASTER=${MASTER:-y}
       ## END from ACTIVATE DMARC REPORTING
+    # ports:
+    # we do not need those ipv6 ports, because we use traefik as reverse proxy
+    # - "[{{ mailcow.ipv6 }}]:80:80"
+    # - "[{{ mailcow.ipv6 }}]:443:443"
     networks:
       web:
     labels:
