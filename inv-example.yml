@@ -161,3 +161,25 @@ all:
         #
         # Folder from where the backup should be restored from
         restore_from: /root/restore-2023-11-16
+      cryptomator_hub:
+        host: cryhub.yourdomain.com
+        installpath: /opt/cryptomator_hub
+        id: "<some id string for the license>"
+        initial_user: admin
+        initial_password: "<very secret password>"
+        syncer_user: syncer
+        syncer_password: "<another very secret password>"
+      cryptomator_keycloak:
+        config_folder: "{{ cryptomator_hub.installpath }}/kc-config/"
+        host: crykc.yourdomain.com
+        relative_path: "/kc"
+        admin_user: admin
+        admin_password: "<some more secret password>"
+      cryptomator_db:
+        init_folder: "{{ cryptomator_hub.installpath }}/db-init/"
+        data_folder: "{{ cryptomator_hub.installpath }}/db-data/"
+        hub_user: hub
+        hub_password: "<again secret password>"
+        keycloak_user: keycloak
+        keycloak_password: "<really secret password>"
+        postgres_password: "<password, should be secret>"

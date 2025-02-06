@@ -1,0 +1,128 @@
+# Template for Cryptomator Hub deployment according to your specifications.
+
+# If for some reason you later change any of the following environment variables, make sure to remove `--optimized` from the keycloak command, otherwise it will not start:
+#  * KC_DB
+#  * KC_HEALTH_ENABLED
+#  * KC_HTTP_RELATIVE_PATH
+
+# Generated using script version 6
+
+networks:
+  internal:
+    internal: true
+  traefik_web:
+    external: true
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    volumes:
+      - "{{ cryptomator_db.init_folder }}:/docker-entrypoint-initdb.d"
+      - "{{ cryptomator_db.data_folder }}:/var/lib/postgresql/data"
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "1.0"
+    #       memory: 128M
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - "-U"
+        - postgres
+      interval: 10s
+      timeout: 3s
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: "{{ cryptomator_db.postgres_password }}"
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    networks:
+      - internal
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+  keycloak:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: ghcr.io/cryptomator/keycloak:24.0.4
+    command: start --optimized --import-realm
+    volumes:
+      - "{{ cryptomator_keycloak.config_folder }}:/opt/keycloak/data/import"
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "1.0"
+    #       memory: 256M
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "-f"
+        - "http://localhost:8080{{ cryptomator_keycloak.relative_path }}/health/live"
+      interval: 60s
+      timeout: 3s
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: "{{ cryptomator_keycloak.admin_user }}"
+      KEYCLOAK_ADMIN_PASSWORD: "{{ cryptomator_keycloak.admin_password }}"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: "{{ cryptomator_db.keycloak_user }}"
+      KC_DB_PASSWORD: "{{ cryptomator_db.keycloak_password }}"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME: "{{ cryptomator_keycloak.host }}"
+      KC_HTTP_RELATIVE_PATH: "{{ cryptomator_keycloak.relative_path }}"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+    networks:
+      - traefik_web
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.crypthubkc.rule=Host(`{{ cryptomator_keycloak.host }}`)
+      - traefik.http.services.crypthubkc.loadbalancer.server.port=8080
+      - "com.centurylinklabs.watchtower.enable=true"
+  hub:
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    image: ghcr.io/cryptomator/hub:stable
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "1.0"
+    #       memory: 256M
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - (curl -f http://localhost:8080/q/health/live && curl -f http://localhost:8080/api/config) || exit 1
+      interval: 10s
+      timeout: 3s
+    restart: unless-stopped
+    environment:
+      HUB_PUBLIC_ROOT_PATH: /
+      HUB_KEYCLOAK_PUBLIC_URL: "https://{{ cryptomator_keycloak.host }}{{ cryptomator_keycloak.relative_path }}"
+      HUB_KEYCLOAK_LOCAL_URL: http://keycloak:8080{{ cryptomator_keycloak.relative_path }}
+      HUB_KEYCLOAK_REALM: cryptomator
+      HUB_KEYCLOAK_SYNCER_USERNAME: "{{ cryptomator_hub.syncer_user }}"
+      HUB_KEYCLOAK_SYNCER_PASSWORD: "{{ cryptomator_hub.syncer_password}}"
+      HUB_KEYCLOAK_SYNCER_CLIENT_ID: admin-cli
+      HUB_KEYCLOAK_SYNCER_PERIOD: 5m
+      HUB_KEYCLOAK_OIDC_CRYPTOMATOR_CLIENT_ID: cryptomator
+      QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080{{ cryptomator_keycloak.relative_path }}/realms/cryptomator
+      QUARKUS_OIDC_TOKEN_ISSUER: https://{{ cryptomator_keycloak.host }}{{ cryptomator_keycloak.relative_path }}/realms/cryptomator
+      QUARKUS_OIDC_CLIENT_ID: cryptomatorhub
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/hub
+      QUARKUS_DATASOURCE_USERNAME: "{{ cryptomator_db.hub_user }}"
+      QUARKUS_DATASOURCE_PASSWORD: "{{ cryptomator_db.hub_password }}"
+      QUARKUS_HTTP_HEADER__CONTENT_SECURITY_POLICY__VALUE: default-src 'self'; connect-src 'self' api.cryptomator.org https://{{ cryptomator_keycloak.host }}{{ cryptomator_keycloak.relative_path }}/; object-src 'none'; child-src 'self'; img-src * data:; frame-ancestors 'none'
+    networks:
+      - traefik_web
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.crypthub.rule=Host(`{{ cryptomator_hub.host }}`)
+      - traefik.http.services.crypthub.loadbalancer.server.port=8080
+      - "com.centurylinklabs.watchtower.enable=true"

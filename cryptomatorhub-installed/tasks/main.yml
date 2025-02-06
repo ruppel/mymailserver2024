@@ -1,0 +1,37 @@
+- name: Folders should exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ cryptomator_hub.installpath }}"
+    - "{{ cryptomator_keycloak.config_folder }}"
+    - "{{ cryptomator_db.init_folder }}"
+    - "{{ cryptomator_db.data_folder }}"
+
+- name: Copy files to server
+  template:
+    src: ../files/{{ item.file }}
+    dest: "{{ item.dest }}"
+    mode: "0755"
+  loop:
+    - file: docker-compose.yml
+      dest: "{{ cryptomator_hub.installpath }}/docker-compose.yml"
+    - file: initdb.sql
+      dest: "{{ cryptomator_db.init_folder }}/initdb.sql"
+    - file: realm.json
+      dest: "{{ cryptomator_keycloak.config_folder }}/realm.json"
+
+- name: Stop docker container
+  shell:
+    cmd: "docker compose down"
+    chdir: "{{ cryptomator_hub.installpath }}"
+- name: Run docker container
+  shell:
+    cmd: "docker compose up -d"
+    chdir: "{{ cryptomator_hub.installpath }}"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output
