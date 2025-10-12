@@ -10,3 +10,4 @@
     - sendmail-disabled
     - exim4-disabled
     - journallogs-limited
+    - jq-installed
