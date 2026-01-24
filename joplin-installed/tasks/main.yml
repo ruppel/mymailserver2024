@@ -12,13 +12,13 @@
     - docker-compose.yml
 
 - name: Stop joplin
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ joplin.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ joplin.installpath }}"
+    state: absent
 - name: Run joplin
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ joplin.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ joplin.installpath }}"
+    state: present
   register: output
 
 - name: Show results
