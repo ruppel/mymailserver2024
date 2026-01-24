@@ -10,7 +10,7 @@ Do not blindly clone them and start. Having a web and mail server in the interne
 
 ## My architecture on the server
 
-- Use [debian](https://www.debian.org/) 12 (bookworm) as basis OS
+- Use [debian](https://www.debian.org/) 13 (trixie) as basis OS
 - Keep the system up to date automatically
 - Use [docker](https://www.docker.com/) containers
 - Use [traefik](https://traefik.io/) as reverse proxy for the docker containers
