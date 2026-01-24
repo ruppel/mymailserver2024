@@ -1,15 +1,27 @@
-- name: Add an Apt signing key for docker
-  apt_key:
-    url: https://download.docker.com/linux/debian/gpg
+- name: Ensure necessary packages are installed
+  package:
+    name:
+      - ca-certificates
     state: present
+- name: Install keyrings file
+  ansible.builtin.command:
+    cmd: install -m 0755 -d /etc/apt/keyrings
+- name: Download docker apt repo key file
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0444"
 - name: Get lsb name of host
   command: "lsb_release -c -s"
   register: host_lsb_name
+- name: Get architecture name of host
+  command: "dpkg --print-architecture"
+  register: host_arch_name
 - name: Add apt-sources to docker
   copy:
     dest: /etc/apt/sources.list.d/docker.list
     mode: "0644"
-    content: deb [arch=amd64] https://download.docker.com/linux/debian {{ host_lsb_name.stdout }} stable
+    content: deb [arch={{ host_arch_name.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ host_lsb_name.stdout }} stable
 - name: "Update apt cache"
   apt:
     update_cache: yes
