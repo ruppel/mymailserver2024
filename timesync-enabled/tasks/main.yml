@@ -1,10 +1,12 @@
-- name: Install NTP
+# Debian 13 (trixie) removed ntp and recommends ntpsec or chrony.
+# I use ntpsec
+- name: Install NTPSec
   package:
-    name: ntp
+    name: ntpsec
     state: present
 - name: Configure ntp servers
   copy:
-    dest: /etc/ntp.conf
+    dest: /etc/ntpsec/ntp.conf
     mode: "0644"
     content: |
       server 0.pool.ntp.org
