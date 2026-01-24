@@ -6,6 +6,8 @@ all:
       ansible_host: 5.5.5.5
       ansible_connection: ssh
       ssh_default_port: 22
+      ipv6_host: "2222:beef:example:eeee::1" # the ipv6 adress of the server
+      ipv6_routing: "5555:55" # the ipv6 router of the server
       #
       # ssh port, you want to use
       ansible_port: 22855
@@ -61,7 +63,6 @@ all:
         admin_fqdn: "mail.{{ domain }}"
         installpath: "/opt/mailcow/"
         additional_san: "server.{{ domain }}"
-        ipv6: "2222:beef:example:eeee::1" # the ipv6 adress of the server
         postmaster_email: "webmaster@{{ domain }}"
         timezone: "Europe/Berlin"
         internal_http_port: 8090

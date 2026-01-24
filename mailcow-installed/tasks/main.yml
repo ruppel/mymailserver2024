@@ -18,6 +18,7 @@
       (.*)your mail servers hostname(.*): "{{ mailcow.admin_fqdn }}"
       (.*)Timezone \[(.*)\](.*): "{{ mailcow.timezone }}"
       (.*)Choose the Branch with it(.*)s number(.*): "1"
+      (.*)daemon.json not found. Create it with IPv6 settings(.*): "Y"
   when: not file_mailcow_conf.stat.exists
 - name: Adjust mailcow configuration
   lineinfile:

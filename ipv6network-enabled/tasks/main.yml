@@ -1,0 +1,4 @@
+- name: add ipv6 ip to network interfaces
+  lineinfile:
+    path: /etc/network/interfaces
+    line: "iface eth0 inet6 static address {{ ipv6_host }} netmask 64 gateway {{ ipv6_routing }}"

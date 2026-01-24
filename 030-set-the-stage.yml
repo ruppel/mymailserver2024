@@ -3,6 +3,7 @@
   become: yes
   roles:
     - hostname-set
+    - ipv6network-enabled
     - ansible-python-tools
     - update-upgrade
     - restart-server
