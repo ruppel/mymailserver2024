@@ -12,13 +12,13 @@
     - docker-compose.yml
 
 - name: Stop wireguard
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ wireguard.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ wireguard.installpath }}"
+    state: absent
 - name: Run wireguard
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ wireguard.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ wireguard.installpath }}"
+    state: present
   register: output
 
 - name: Show results

@@ -12,13 +12,13 @@
     - docker-compose.yml
 
 - name: Stop watchtower
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ watchtower.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ watchtower.installpath }}"
+    state: absent
 - name: Run watchtower
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ watchtower.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ watchtower.installpath }}"
+    state: present
   register: output
 
 - name: Show results

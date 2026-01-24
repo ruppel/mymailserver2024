@@ -12,13 +12,13 @@
     - docker-compose.yml
 
 - name: Stop demo
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ my_folder }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ my_folder }}"
+    state: absent
 - name: Run demo
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ my_folder }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ my_folder }}"
+    state: present
   register: output
 
 - name: Show results

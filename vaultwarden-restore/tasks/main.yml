@@ -1,7 +1,7 @@
 - name: Stop vaultwarden
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ vaultwarden.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ vaultwarden.installpath }}"
+    state: absent
 - name: Remove data dir
   file:
     path: "{{ vaultwarden.installpath }}/data"
@@ -17,9 +17,9 @@
     src: "{{ backup.restore_from }}/vaultwarden/"
     dest: "{{ vaultwarden.installpath }}/data/"
 - name: Run vaultwarden
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ vaultwarden.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ vaultwarden.installpath }}"
+    state: present
   register: output
 - name: Notice
   ansible.builtin.debug:

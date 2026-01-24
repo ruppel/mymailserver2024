@@ -55,18 +55,18 @@
     mode: "0644"
   loop:
     - docker-compose.override.yml
-- name: Run mailcow
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ mailcow.installpath }}"
-  register: output
+# - name: Run mailcow
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ mailcow.installpath }}"
+#     state: present
+#   register: output
 - name: Copy rspam config for DMARC reporting to server
   template:
     src: ../files/dmarc.conf
     dest: "{{ mailcow.installpath }}data/conf/rspamd/local.d/dmarc.conf"
     mode: "0644"
-- name: Rerun mailcow
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ mailcow.installpath }}"
-  register: output
+# - name: Rerun mailcow
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ mailcow.installpath }}"
+#     state: restarted
+#   register: output

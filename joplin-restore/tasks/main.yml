@@ -1,7 +1,7 @@
 - name: Stop joplin
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ joplin.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ joplin.installpath }}"
+    state: absent
 - name: Only start database
   shell:
     cmd: "docker compose up db -d"
@@ -31,11 +31,11 @@
     cmd: docker compose exec db sh -c "rm /tmp/db-dump.sql"
     chdir: "{{ joplin.installpath }}"
 - name: Stop joplin
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ joplin.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ joplin.installpath }}"
+    state: absent
 - name: Run joplin
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ joplin.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ joplin.installpath }}"
+    state: present
   register: output

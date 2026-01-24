@@ -11,13 +11,13 @@
   loop:
     - docker-compose.yml
 - name: Stop vaultwarden
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ vaultwarden.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ vaultwarden.installpath }}"
+    state: absent
 - name: Run vaultwarden
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ vaultwarden.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ vaultwarden.installpath }}"
+    state: present
   register: output
 
 - name: Show results

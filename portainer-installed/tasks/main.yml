@@ -11,15 +11,14 @@
   loop:
     - docker-compose.yml
 - name: Stop portainer
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ portainer.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ portainer.installpath }}"
+    state: absent
 - name: Run portainer
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ portainer.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ portainer.installpath }}"
+    state: present
   register: output
-
 - name: Show results
   ansible.builtin.debug:
     var: output

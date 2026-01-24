@@ -3,9 +3,9 @@
 # https://docs.nextcloud.com/server/latest/admin_manual/maintenance/restore.html
 #
 - name: Stop nextcloud
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ nextcloud.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nextcloud.installpath }}"
+    state: absent
 - name: Remove html dir
   file:
     path: "{{ nextcloud.installpath }}/html"
@@ -23,9 +23,9 @@
     remote_src: true
 
 - name: Run nextcloud
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ nextcloud.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nextcloud.installpath }}"
+    state: present
   register: output
 
 - name: Wait 60 seconds for startup of nextcloud
