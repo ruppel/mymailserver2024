@@ -119,6 +119,13 @@ all:
         mailer_auth_password: password_to_be_userd
         mailer_noreply_name: JoplinServer
         mailer_noreply_email: from@wherethemailcomes.from
+      obsidian_livesync:
+        host: obsidian-livesync..yourdomain.org
+        installpath: /opt/obsidian-livesync/
+        db_user: "db-username"
+        db_password: "very-secret-password"
+        run_user: "1000"
+        run_group: "1000"
       wireguard:
         host: vpn.yourdomain.org
         installpath: /opt/wireguard/

@@ -1,0 +1,59 @@
+- name: Folder for obsidian-sync should exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0666"
+    #owner: "{{ obsidian_livesync.run_user }}"
+    #group: "{{ obsidian_livesync.run_group }}"
+  loop:
+    - "{{ obsidian_livesync.installpath }}"
+    - "{{ obsidian_livesync.installpath }}/data"
+
+- name: Copy docker files to server
+  ansible.builtin.template:
+    src: ../files/{{ item }}
+    dest: "{{ obsidian_livesync.installpath }}{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+- name: ini File exists
+  ansible.builtin.file:
+    path: "{{ obsidian_livesync.installpath }}/local.ini"
+    mode: "0666"
+    #owner: "{{ obsidian_livesync.run_user }}"
+    #group: "{{ obsidian_livesync.run_group }}"
+    state: touch
+
+- name: Stop obsidian-sync
+  community.docker.docker_compose_v2:
+    project_src: "{{ obsidian_livesync.installpath }}"
+    state: absent
+- name: Run obsidian-sync
+  community.docker.docker_compose_v2:
+    project_src: "{{ obsidian_livesync.installpath }}"
+    state: present
+
+- name: Wait 60 seconds so obsidian has the chance to initialize itself
+  ansible.builtin.wait_for:
+    timeout: 60
+  delegate_to: localhost
+
+- name: Download init script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/vrtmrz/obsidian-livesync/main/utils/couchdb/couchdb-init.sh
+    dest: "{{ obsidian_livesync.installpath }}/couchdb-init.sh"
+    mode: "755"
+
+- name: Run init script
+  ansible.builtin.shell:
+    cmd: "hostname={{ obsidian_livesync.host }} username={{ obsidian_livesync.db_user }} password={{ obsidian_livesync.db_password }} {{ obsidian_livesync.installpath }}/couchdb-init.sh"
+  register: output
+
+- name: Show results
+  ansible.builtin.debug:
+    var: output
+
+- name: Delete init script
+  file:
+    path: "{{ obsidian_livesync.installpath }}/couchdb-init.sh"
+    state: absent

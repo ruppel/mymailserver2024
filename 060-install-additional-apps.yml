@@ -3,6 +3,7 @@
   become: yes
   roles:
     - joplin-installed
+    - obsidian-livesync-installed
     - wireguard-installed
     - nextcloud-installed
     - vaultwarden-installed
