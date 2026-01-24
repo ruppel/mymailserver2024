@@ -12,13 +12,13 @@
     - docker-compose.yml
 
 - name: Stop nextcloud
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ nextcloud.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nextcloud.installpath }}"
+    state: absent
 - name: Run nextcloud
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ nextcloud.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nextcloud.installpath }}"
+    state: present
   register: output
 
 - name: Show results
@@ -72,11 +72,11 @@
   register: output
 
 - name: Stop nextcloud
-  shell:
-    cmd: "docker compose down"
-    chdir: "{{ nextcloud.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nextcloud.installpath }}"
+    state: absent
 - name: Run nextcloud
-  shell:
-    cmd: "docker compose up -d"
-    chdir: "{{ nextcloud.installpath }}"
+  community.docker.docker_compose_v2:
+    project_src: "{{ nextcloud.installpath }}"
+    state: present
   register: output
