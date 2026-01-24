@@ -129,9 +129,6 @@ all:
       wireguard:
         host: vpn.yourdomain.org
         installpath: /opt/wireguard/
-        #
-        # The admin password
-        password: "very-secret-password"
         tcp_port: 51821
         udp_port: 51820
       nextcloud:
