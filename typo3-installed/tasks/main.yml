@@ -1,0 +1,82 @@
+- name: Folders for database should exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ typo3.installpath }}/db"
+- name: Folder for typo3 should exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+    owner: www-data
+    group: www-data
+  loop:
+    - "{{ typo3.installpath }}/typo3"
+- name: Check whether docker-compose is already present
+  ansible.builtin.stat:
+    path: "{{ typo3.installpath }}/docker-compose.yml"
+  register: doco
+- name: Stop Container
+  community.docker.docker_compose_v2:
+    project_src: "{{ typo3.installpath }}"
+    state: absent
+  when: doco.stat.exists
+- name: Copy docker files to server
+  template:
+    src: ../files/{{ item }}
+    dest: "{{ typo3.installpath }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - docker-compose.yml
+    - apache-config.conf
+    - Dockerfile
+    - php.ini
+- name: Run Container
+  community.docker.docker_compose_v2:
+    project_src: "{{ typo3.installpath }}"
+    state: present
+    build: always
+  register: runtypo
+- name: Check whether typo3 is already installed
+  ansible.builtin.stat:
+    path: "{{ typo3.installpath }}/typo3/public/index.php"
+  register: typo
+- name: Install Typo3
+  community.docker.docker_compose_v2_exec:
+    project_src: "{{ typo3.installpath }}"
+    service: php
+    command: php /usr/local/bin/composer create-project  --no-dev  "typo3/cms-base-distribution:^13" .
+    chdir: /app
+    user: www-data
+  register: result
+  when: not typo.stat.exists
+- name: Setup Typo3
+  community.docker.docker_compose_v2_exec:
+    project_src: "{{ typo3.installpath }}"
+    service: php
+    command: >
+      ./vendor/bin/typo3 setup
+      --project-name {{ typo3.hostname }}
+      --server-type apache
+      --driver pdoMysql
+      --host db
+      --dbname {{ typo3.db.name }}
+      --username {{ typo3.db.user_name }}
+      --password {{ typo3.db.user_password }}
+      --admin-username {{ typo3.admin_name }}
+      --admin-user-password {{ typo3.admin_passw }}
+      --admin-email {{ typo3.admin_email }}
+      --no-interaction
+    chdir: /app
+    user: www-data
+  register: result
+  when: not typo.stat.exists
+- name: Copy additional config to support reverse proxy
+  template:
+    src: ../files/additional.php
+    dest: "{{ typo3.installpath }}/typo3/config/system/additional.php"
+    mode: "0664"
+    owner: www-data
+    group: www-data

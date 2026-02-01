@@ -26,6 +26,10 @@ Apps added:
 - [Wireguard](https://www.wireguard.com/) as VPN entry point
 - [Nextcloud](https://nextcloud.com/) to store files, sync contacts and calendars (and bookmarks)
 - [Vaultwarden](https://github.com/dani-garcia/vaultwarden) to store and sync credentials over all my clients
+- [Cryptomator-Hub](https://cryptomator.org/de/for-teams/) to serve the keyserver for teams that use cryptomator
+- [Kitchen-Owl](https://kitchenowl.org/) to serve as a grocery list, recipe manager and shopping list
+- [Obsidian Live-Sync](https://github.com/vrtmrz/obsidian-livesync) as Sync Server for [Obsidian](https://obsidian.md/)
+- [Typo3](https://typo3.org/) as a multidomain web content management system
 - (more to come)
 
 ## My architecture on the dev side (the captains chair)

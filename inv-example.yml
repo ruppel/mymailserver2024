@@ -188,3 +188,20 @@ all:
         keycloak_user: keycloak
         keycloak_password: "<really secret password>"
         postgres_password: "<password, should be secret>"
+      typo3:
+        installpath: /opt/typo3
+        hostname: "{{ domain }}"
+        admin_name: "admin"
+        admin_email: "user@example.org"
+        admin_passw: "<really secret password>"
+        db:
+          root_password: "<another really secret password>"
+          name: "dbname"
+          user_name: "dbusername"
+          user_password: "<password, should be secret>"
+        myphp_hostname: "typo3-phpmyadmin.{{ domain }}"
+        domains:
+          - "example.org"
+          - "www.example.org"
+          - "anotherexample.com"
+          - "www.anotherexample.com"

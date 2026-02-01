@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mariadb:10.6
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "{{ typo3.db.root_password }}"
+      MYSQL_DATABASE: "{{ typo3.db.name }}"
+      MYSQL_USER: "{{ typo3.db.user_name }}"
+      MYSQL_PASSWORD: "{{ typo3.db.user_password }}"
+      MYSQL_CHARACTER_SET: utf8
+      MYSQL_COLLATION: utf8_unicode_ci
+      MYSQL_INITDB_SKIP_TZINFO: 1 
+    networks:
+      - internal
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  php:
+    build: ./
+    volumes:
+      - ./typo3:/app
+    networks:
+      - internal
+      - traefik_web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.typo3-apache.rule={% for domain in typo3.domains %}{% if loop.index > 1 %} || {% endif %}Host(`{{ domain }}`){% endfor %}"
+      # - "com.centurylinklabs.watchtower.enable=true"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_ARBITRARY: 1
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.typo3-phpmyadmin.rule=Host(`{{ typo3.myphp_hostname }}`)"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik_web
+      - internal
+
+networks:
+  internal:
+    internal: true
+  traefik_web:
+    external: true
